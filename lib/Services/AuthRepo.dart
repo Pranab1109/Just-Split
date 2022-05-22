@@ -8,6 +8,7 @@ class AuthRepository {
   Future<User?> signUp(
       {required String email, required String password}) async {
     try {
+      _firebaseAuth.useAuthEmulator('10.0.2.2', 9099);
       var usercred = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
       preferenceService.saveAuthStatus(true);
@@ -31,6 +32,7 @@ class AuthRepository {
     required String password,
   }) async {
     try {
+      _firebaseAuth.useAuthEmulator('10.0.2.2', 9099);
       var userCred = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
       preferenceService.saveAuthStatus(true);
@@ -44,8 +46,8 @@ class AuthRepository {
 
   Future<void> signOut() async {
     try {
-      preferenceService.saveAuthStatus(false);
       await _firebaseAuth.signOut();
+      preferenceService.saveAuthStatus(false);
     } catch (e) {
       print(e);
       // throw Exception(e);
@@ -54,11 +56,15 @@ class AuthRepository {
 
   Future<User?> signInWithGoogle() async {
     try {
+      _firebaseAuth.useAuthEmulator('10.0.2.2', 9099);
+      // Trigger the authentication flow
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
 
+      // Obtain the auth details from the request
       final GoogleSignInAuthentication? googleAuth =
           await googleUser?.authentication;
 
+      // Create a new credential
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth?.accessToken,
         idToken: googleAuth?.idToken,
@@ -70,7 +76,8 @@ class AuthRepository {
       return usercred.user;
     } catch (e) {
       preferenceService.saveAuthStatus(false);
-      print(e);
+      print("error : " + e.toString());
+      return null;
       // throw Exception(e.toString());
     }
     return null;

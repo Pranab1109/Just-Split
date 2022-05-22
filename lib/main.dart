@@ -7,6 +7,7 @@ import 'package:just_split/Services/FirebaseFirestoreRepo.dart';
 import 'package:just_split/Services/PreferenceService.dart';
 import 'package:just_split/screens/LandingPage.dart';
 import 'package:just_split/screens/LoginPage.dart';
+import 'package:just_split/utils/Cooloors.dart';
 
 import 'bloc/auth/auth_bloc.dart';
 
@@ -20,6 +21,7 @@ class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
+    Cooloors cooloors = Cooloors();
     return MultiRepositoryProvider(
         // create: (context) => AuthRepository(),
         providers: [
@@ -39,19 +41,31 @@ class MyApp extends StatelessWidget {
               initialData: false,
               future: PreferenceService().getAuthStatus(),
               builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  if (snapshot.data == true) {
-                    return MaterialApp(
-                      theme: ThemeData(
-                        textTheme: GoogleFonts.aBeeZeeTextTheme(
+                if (snapshot.hasData && snapshot.data == true) {
+                  return MaterialApp(
+                    theme: ThemeData(
+                        textTheme: GoogleFonts.libreBaskervilleTextTheme(
                           Theme.of(context).textTheme,
                         ),
-                      ),
-                      home: LandingPage(
-                        user: AuthRepository().getUser(),
-                      ),
-                    );
-                  }
+                        scaffoldBackgroundColor: cooloors.darkBackgroundColor,
+                        elevatedButtonTheme: ElevatedButtonThemeData(
+                          style: ButtonStyle(
+                            backgroundColor:
+                                MaterialStateProperty.all(cooloors.buttonColor),
+                            foregroundColor: MaterialStateProperty.all(
+                                cooloors.lightTextColor),
+                          ),
+                        ),
+                        appBarTheme: AppBarTheme(
+                          backgroundColor: cooloors.darkBackgroundColor,
+                          elevation: 0.0,
+                        ),
+                        colorScheme: ColorScheme.fromSwatch()
+                            .copyWith(secondary: cooloors.buttonColor)),
+                    home: LandingPage(
+                      user: AuthRepository().getUser(),
+                    ),
+                  );
                 }
                 return MaterialApp(
                   theme: ThemeData(

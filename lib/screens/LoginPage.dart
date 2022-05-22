@@ -46,8 +46,8 @@ class LoginPage extends StatelessWidget {
               ),
             );
           } else if (state is AuthError) {
-            // ScaffoldMessenger.of(context)
-            //     .showSnackBar(SnackBar(content: Text(state.error)));
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(state.error)));
             print(state.error);
           }
         },
