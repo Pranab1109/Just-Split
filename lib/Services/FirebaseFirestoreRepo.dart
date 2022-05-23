@@ -27,6 +27,7 @@ class FirebaseFirestoreRepo {
       "roomName": roomName,
       "users": [user.uid]
     });
+    rooms.doc("map").update({roomID: roomUID.id});
     await users
         .doc(user.uid)
         .collection("rooms")
