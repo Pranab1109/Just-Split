@@ -60,8 +60,9 @@ class LandingPage extends StatelessWidget {
             ),
             height: 50,
             width: MediaQuery.of(context).size.width * 0.85,
-            color:
-                !res["success"] ? Colors.red.shade200 : Colors.green.shade300,
+            color: !res["success"]
+                ? const Color(0xffFF846D)
+                : Colors.green.shade300,
           ),
           behavior: SnackBarBehavior.floating,
         ),
