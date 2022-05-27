@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:just_split/utils/MyTextFieldTwo.dart';
 
-Widget createAndJoinRoomModalSheet(BuildContext context, cooloors, _formKey,
-    _formKeyTwo, roomEditingController, joinEditingController, addRoom) {
+Widget createAndJoinRoomModalSheet(
+    BuildContext context,
+    cooloors,
+    _formKey,
+    _formKeyTwo,
+    roomEditingController,
+    joinEditingController,
+    addRoom,
+    joinRoom) {
   return Column(
     mainAxisSize: MainAxisSize.min,
     children: [
@@ -102,8 +109,9 @@ Widget createAndJoinRoomModalSheet(BuildContext context, cooloors, _formKey,
                       child: ElevatedButton(
                           // style: ElevatedButton.styleFrom(
                           //     primary: Colors.white),
-                          onPressed: () {
+                          onPressed: () async {
                             //todo : join room
+                            joinRoom(context);
                           },
                           child: SizedBox(
                             height: 50.0,

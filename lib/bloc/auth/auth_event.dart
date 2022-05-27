@@ -33,5 +33,3 @@ class GoogleSignUpRequested extends AuthEvent {
 
 // When the user signing out this event is called and the [AuthRepository] is called to sign out the user
 class SignOutRequested extends AuthEvent {}
-
-class GoogleSignInRequested extends AuthEvent {}

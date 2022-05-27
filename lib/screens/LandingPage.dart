@@ -8,7 +8,6 @@ import 'package:just_split/screens/LoginPage.dart';
 import 'package:just_split/screens/RoomDetailScreen.dart';
 import 'package:just_split/utils/Cooloors.dart';
 import 'package:just_split/utils/CreateAndJoinRoomModalSheet.dart';
-import 'package:just_split/utils/RandomCodeGenerator.dart';
 import 'package:just_split/utils/RoomTile.dart';
 import '../utils/OnWillPop.dart';
 
@@ -34,15 +33,45 @@ class LandingPage extends StatelessWidget {
   void addRoom(context) {
     if (_formKey.currentState!.validate()) {
       RepositoryProvider.of<FirebaseFirestoreRepo>(context)
-          .addRoom(generateRandomString(6), roomEditingController.text, user);
+          .addRoom(roomEditingController.text, user);
       roomEditingController.text = "";
       Navigator.pop(context);
     }
   }
 
+  Future<void> joinRoom(context) async {
+    if (_formKeyTwo.currentState!.validate()) {
+      dynamic res = await RepositoryProvider.of<FirebaseFirestoreRepo>(context)
+          .joinRoom(roomCode: joinEditingController.text);
+      roomEditingController.text = "";
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          dismissDirection: DismissDirection.down,
+          padding: const EdgeInsets.all(0),
+          content: Container(
+            child: Center(
+              child: Text(
+                res["message"],
+                style: TextStyle(
+                    color: cooloors.lightTextColor,
+                    fontWeight: FontWeight.bold),
+              ),
+            ),
+            height: 50,
+            width: MediaQuery.of(context).size.width * 0.85,
+            color:
+                !res["success"] ? Colors.red.shade200 : Colors.green.shade300,
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
   void deleteRoom(context, roomUID, userRoomID) {
     RepositoryProvider.of<FirebaseFirestoreRepo>(context)
-        .deleteTask(roomDocID: roomUID, userRoomID: userRoomID);
+        .deleteRoom(roomDocID: roomUID, userRoomID: userRoomID);
   }
 
   @override
@@ -110,30 +139,34 @@ class LandingPage extends StatelessWidget {
                   }),
             ),
           ),
-          ElevatedButton(
-            onPressed: () {
-              showModalBottomSheet(
-                  isScrollControlled: true,
-                  // expand: true,
-                  backgroundColor: cooloors.darkBackgroundColor,
-                  shape: const RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.vertical(top: Radius.circular(25.0))),
-                  context: (context),
-                  builder: (context) => createAndJoinRoomModalSheet(
-                      context,
-                      cooloors,
-                      _formKey,
-                      _formKeyTwo,
-                      roomEditingController,
-                      joinEditingController,
-                      addRoom));
-            },
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              width: MediaQuery.of(context).size.width * 0.87,
-              height: 50,
-              child: const Icon(Icons.add),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: ElevatedButton(
+              onPressed: () {
+                showModalBottomSheet(
+                    isScrollControlled: true,
+                    // expand: true,
+                    backgroundColor: cooloors.darkBackgroundColor,
+                    shape: const RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.vertical(top: Radius.circular(25.0))),
+                    context: (context),
+                    builder: (context) => createAndJoinRoomModalSheet(
+                        context,
+                        cooloors,
+                        _formKey,
+                        _formKeyTwo,
+                        roomEditingController,
+                        joinEditingController,
+                        addRoom,
+                        joinRoom));
+              },
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                width: MediaQuery.of(context).size.width * 0.87,
+                height: 50,
+                child: const Icon(Icons.add),
+              ),
             ),
           ),
         ],

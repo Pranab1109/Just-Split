@@ -25,7 +25,7 @@ class LoginPage extends StatelessWidget {
 //
   void _authenticateWithGoogle(context) {
     BlocProvider.of<AuthBloc>(context).add(
-      GoogleSignInRequested(),
+      GoogleSignUpRequested(0),
     );
   }
 

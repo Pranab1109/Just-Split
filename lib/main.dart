@@ -22,6 +22,24 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Cooloors cooloors = Cooloors();
+    var themeData = ThemeData(
+      textTheme: GoogleFonts.libreBaskervilleTextTheme(
+        Theme.of(context).textTheme,
+      ),
+      scaffoldBackgroundColor: cooloors.darkBackgroundColor,
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ButtonStyle(
+          backgroundColor: MaterialStateProperty.all(cooloors.buttonColor),
+          foregroundColor: MaterialStateProperty.all(cooloors.lightTextColor),
+        ),
+      ),
+      appBarTheme: AppBarTheme(
+        backgroundColor: cooloors.darkBackgroundColor,
+        elevation: 0.0,
+      ),
+      colorScheme:
+          ColorScheme.fromSwatch().copyWith(secondary: cooloors.buttonColor),
+    );
     return MultiRepositoryProvider(
         // create: (context) => AuthRepository(),
         providers: [
@@ -43,44 +61,17 @@ class MyApp extends StatelessWidget {
               builder: (context, snapshot) {
                 if (snapshot.hasData && snapshot.data == true) {
                   return MaterialApp(
-                    theme: ThemeData(
-                        textTheme: GoogleFonts.libreBaskervilleTextTheme(
-                          Theme.of(context).textTheme,
-                        ),
-                        scaffoldBackgroundColor: cooloors.darkBackgroundColor,
-                        elevatedButtonTheme: ElevatedButtonThemeData(
-                          style: ButtonStyle(
-                            backgroundColor:
-                                MaterialStateProperty.all(cooloors.buttonColor),
-                            foregroundColor: MaterialStateProperty.all(
-                                cooloors.lightTextColor),
-                          ),
-                        ),
-                        appBarTheme: AppBarTheme(
-                          backgroundColor: cooloors.darkBackgroundColor,
-                          elevation: 0.0,
-                        ),
-                        colorScheme: ColorScheme.fromSwatch()
-                            .copyWith(secondary: cooloors.buttonColor)),
+                    theme: themeData,
                     home: LandingPage(
                       user: AuthRepository().getUser(),
                     ),
                   );
                 }
                 return MaterialApp(
-                  theme: ThemeData(
-                    textTheme: GoogleFonts.aBeeZeeTextTheme(
-                      Theme.of(context).textTheme,
-                    ),
-                  ),
+                  theme: themeData,
                   home: LoginPage(),
                 );
               },
             )));
   }
 }
-
-
-/*
-
-*/

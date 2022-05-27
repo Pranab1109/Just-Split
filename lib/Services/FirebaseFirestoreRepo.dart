@@ -1,14 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:just_split/Services/AuthRepo.dart';
+import 'package:just_split/utils/RandomCodeGenerator.dart';
 
 class FirebaseFirestoreRepo {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
   FirebaseFirestoreRepo();
+  AuthRepository authRepository = AuthRepository();
   CollectionReference users = FirebaseFirestore.instance.collection('users');
   CollectionReference rooms = FirebaseFirestore.instance.collection('rooms');
-  Future<void> addUser(String username, int avatar, User user) {
+  Future<void> addUser(String username, int avatar, User user) async {
     // Call the user's CollectionReference to add a new user
+    final snapshot = await users.doc(user.uid).get();
+    if (snapshot.exists) return;
     return users
         .doc(user.uid)
         .collection("userDetails")
@@ -20,12 +24,19 @@ class FirebaseFirestoreRepo {
         .catchError((error) => print("Failed to add user: $error"));
   }
 
-  Future<void> addRoom(String roomID, String roomName, User user) async {
+  Future<void> addRoom(String roomName, User user) async {
     // Call the user's CollectionReference to add a new user
+    String roomID = generateRandomString(6);
+    DocumentSnapshot roomMapTemp = await rooms.doc("map").get();
+    Map<String, dynamic> roomMap = roomMapTemp.data()! as Map<String, dynamic>;
+    while (roomMap.containsKey(roomID)) {
+      roomID = generateRandomString(6);
+    }
     var roomUID = await rooms.add({
       "roomID": roomID,
       "roomName": roomName,
-      "users": [user.uid]
+      "users": [user.uid],
+      "totalSpent": 0,
     });
     rooms.doc("map").update({roomID: roomUID.id});
     await users
@@ -41,7 +52,7 @@ class FirebaseFirestoreRepo {
         .catchError((error) => print("Failed to add user: $error"));
   }
 
-  Future<void> deleteTask({roomDocID, userRoomID}) async {
+  Future<void> deleteRoom({roomDocID, userRoomID}) async {
     AuthRepository authRepository = AuthRepository();
     var uid = authRepository.getUser().uid;
     print(uid);
@@ -59,6 +70,48 @@ class FirebaseFirestoreRepo {
       usersList.remove(uid);
       roomData["users"] = usersList;
       deletedRoom.update(roomData);
+    }
+  }
+
+  Future<dynamic> joinRoom({roomCode}) async {
+    try {
+      User user = authRepository.getUser();
+      var uid = user.uid;
+      //adding the details in room
+      DocumentSnapshot roomMapTemp = await rooms.doc("map").get();
+      Map<String, dynamic> roomMap =
+          roomMapTemp.data()! as Map<String, dynamic>;
+      var roomDocID = roomMap[roomCode];
+      DocumentSnapshot temp = await rooms.doc(roomDocID).get();
+      Map<String, dynamic> roomData = temp.data()! as Map<String, dynamic>;
+      List usersList = roomData["users"];
+      if (usersList.contains(uid)) {
+        return {
+          "success": false,
+          "message": "Room already exists.",
+        };
+      }
+      usersList.add(uid);
+      final updatedRoom = rooms.doc(roomDocID);
+      roomData["users"] = usersList;
+      await updatedRoom.update(roomData);
+
+      //adding the details in user
+      await users.doc(uid).collection("rooms").add({
+        "roomID": roomCode,
+        "roomName": roomData["roomName"],
+        "time": Timestamp.now(),
+        "roomUID": roomDocID
+      });
+      return {
+        "success": true,
+        "message": "Room joined.",
+      };
+    } catch (e) {
+      return {
+        "success": false,
+        "message": "Room code does not exist!",
+      };
     }
   }
 }

@@ -44,10 +44,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(UnAuthenticated());
       }
     });
+
     on<GoogleSignUpRequested>((event, emit) async {
       emit(Loading());
       try {
-        User? user = await authRepository.signInWithGoogle();
+        User? user = await authRepository.signUpWithGoogle();
         if (user != null) {
           await firebaseFirestoreRepo.addUser(
               user.displayName!, event.avatar, user);
@@ -60,20 +61,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(UnAuthenticated());
       }
     });
-    on<GoogleSignInRequested>((event, emit) async {
-      emit(Loading());
-      try {
-        User? user = await authRepository.signInWithGoogle();
-        if (user != null) {
-          emit(Authenticated(user: user));
-        } else {
-          emit(AuthError("Something went wrong."));
-        }
-      } catch (e) {
-        emit(AuthError(e.toString()));
-        emit(UnAuthenticated());
-      }
-    });
+
     on<SignOutRequested>((event, emit) async {
       emit(Loading());
       await authRepository.signOut();

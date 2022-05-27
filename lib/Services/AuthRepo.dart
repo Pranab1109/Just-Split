@@ -8,7 +8,6 @@ class AuthRepository {
   Future<User?> signUp(
       {required String email, required String password}) async {
     try {
-      _firebaseAuth.useAuthEmulator('10.0.2.2', 9099);
       var usercred = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
       preferenceService.saveAuthStatus(true);
@@ -32,7 +31,6 @@ class AuthRepository {
     required String password,
   }) async {
     try {
-      _firebaseAuth.useAuthEmulator('10.0.2.2', 9099);
       var userCred = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
       preferenceService.saveAuthStatus(true);
@@ -54,9 +52,8 @@ class AuthRepository {
     }
   }
 
-  Future<User?> signInWithGoogle() async {
+  Future<User?> signUpWithGoogle() async {
     try {
-      _firebaseAuth.useAuthEmulator('10.0.2.2', 9099);
       // Trigger the authentication flow
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
 
@@ -69,10 +66,10 @@ class AuthRepository {
         accessToken: googleAuth?.accessToken,
         idToken: googleAuth?.idToken,
       );
-
       var usercred =
           await FirebaseAuth.instance.signInWithCredential(credential);
       preferenceService.saveAuthStatus(true);
+
       return usercred.user;
     } catch (e) {
       preferenceService.saveAuthStatus(false);
