@@ -1,14 +1,29 @@
-import 'package:blobs/blobs.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' as firebase;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:just_split/utils/Cooloors.dart';
+
+import '../utils/BlobDesign.dart';
 
 class RoomDetailScreen extends StatelessWidget {
   final dynamic roomID;
   final String roomName;
-  RoomDetailScreen({Key? key, required this.roomID, required this.roomName})
+  final String roomCode;
+  RoomDetailScreen(
+      {Key? key,
+      required this.roomID,
+      required this.roomName,
+      required this.roomCode})
       : super(key: key);
   final Cooloors cooloors = Cooloors();
+
+  void copyText(context) {
+    Clipboard.setData(ClipboardData(text: roomCode.toString()))
+        .then((_) => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text("Room Code Copied"),
+              behavior: SnackBarBehavior.floating,
+            )));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +43,7 @@ class RoomDetailScreen extends StatelessWidget {
               } else {
                 return Column(
                   children: [
-                    roomCardWidget(size),
+                    roomCardWidget(size, context),
                     Expanded(
                       child: ListView.builder(
                           itemCount: data["users"].length,
@@ -48,83 +63,68 @@ class RoomDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget roomCardWidget(Size size) {
+  Widget roomCardWidget(Size size, BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: Container(
-        width: size.width,
-        height: 200,
-        decoration: BoxDecoration(
-            color: cooloors.lightTileColor,
-            borderRadius: const BorderRadius.all(Radius.circular(5.0))),
-        child: Stack(
-          clipBehavior: Clip.hardEdge,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(roomName),
-                const Spacer(),
-                const Center(
-                    child: Text(
-                  "₹ 20030",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 26.0,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(5.0),
+        child: Container(
+          width: size.width,
+          height: 200,
+          color: cooloors.lightTileColor,
+          child: Stack(
+            clipBehavior: Clip.hardEdge,
+            children: [
+              ...designs,
+              Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(
+                        roomCode,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          copyText(context);
+                        },
+                        icon: const Icon(Icons.copy),
+                        splashRadius: 32.0,
+                        splashColor: Colors.black87,
+                      ),
+                    ],
                   ),
-                )),
-                const Spacer()
-              ],
-            ),
-            Positioned(
-              bottom: -80.0,
-              left: -80.0,
-              child: Blob.random(
-                size: 200,
-                styles: BlobStyles(
-                  color: const Color(0xff87B28A),
-                  fillType: BlobFillType.fill,
-                  strokeWidth: 3,
-                ),
+                  const Spacer(),
+                  const Center(
+                      child: Text(
+                    "₹ 20030",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 26.0,
+                    ),
+                  )),
+                  const Spacer(),
+                  Align(
+                    alignment: Alignment.bottomLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0, left: 8.0),
+                      child: Text(
+                        roomName,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
-            Positioned(
-              bottom: -60.0,
-              left: -60.0,
-              child: Blob.random(
-                size: 200,
-                styles: BlobStyles(
-                  color: const Color(0xff87B28A),
-                  fillType: BlobFillType.stroke,
-                  strokeWidth: 3,
-                ),
-              ),
-            ),
-            Positioned(
-              top: -80.0,
-              right: -80.0,
-              child: Blob.random(
-                size: 200,
-                styles: BlobStyles(
-                  color: const Color(0xff86778E),
-                  fillType: BlobFillType.fill,
-                  strokeWidth: 3,
-                ),
-              ),
-            ),
-            Positioned(
-              top: -60.0,
-              right: -60.0,
-              child: Blob.random(
-                size: 200,
-                styles: BlobStyles(
-                  color: const Color(0xff86778E),
-                  fillType: BlobFillType.stroke,
-                  strokeWidth: 3,
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -129,8 +129,10 @@ class LandingPage extends StatelessWidget {
                               onTap: () {
                                 Navigator.of(context).push(MaterialPageRoute(
                                     builder: (context) => RoomDetailScreen(
-                                        roomID: data["roomUID"],
-                                        roomName: data["roomName"])));
+                                          roomID: data["roomUID"],
+                                          roomName: data["roomName"],
+                                          roomCode: data["roomID"],
+                                        )));
                               },
                               child: roomTile(
                                   context, data, document, deleteRoom)),
