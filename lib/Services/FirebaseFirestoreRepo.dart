@@ -5,23 +5,44 @@ import 'package:just_split/utils/RandomCodeGenerator.dart';
 
 class FirebaseFirestoreRepo {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
-  FirebaseFirestoreRepo();
+  late CollectionReference users;
+  late CollectionReference rooms;
+  FirebaseFirestoreRepo() {
+    users = FirebaseFirestore.instance.collection('USERS');
+    rooms = FirebaseFirestore.instance.collection('ROOMS');
+  }
+
   AuthRepository authRepository = AuthRepository();
-  CollectionReference users = FirebaseFirestore.instance.collection('users');
-  CollectionReference rooms = FirebaseFirestore.instance.collection('rooms');
+
+  Future<bool> checkUserDataExist(uid) async {
+    try {
+      DocumentSnapshot userDocMap = await rooms.doc("userMap").get();
+      Map<String, dynamic> userMapTemp =
+          userDocMap.data()! as Map<String, dynamic>;
+      List userMap = userMapTemp["userList"];
+      if (userMap.contains(uid)) return true;
+      return false;
+    } catch (e) {
+      return false;
+    }
+  }
+
   Future<void> addUser(String username, int avatar, User user) async {
     // Call the user's CollectionReference to add a new user
-    final snapshot = await users.doc(user.uid).get();
-    if (snapshot.exists) return;
-    return users
-        .doc(user.uid)
-        .collection("userDetails")
-        .add({
-          'username': username,
-          'avatar': avatar, // 42
-        })
-        .then((value) => print("User Added"))
-        .catchError((error) => print("Failed to add user: $error"));
+    bool userExists = await checkUserDataExist(user.uid);
+    if (userExists) return;
+    DocumentSnapshot userDocMap = await rooms.doc("userMap").get();
+    Map<String, dynamic> userMapTemp =
+        userDocMap.data()! as Map<String, dynamic>;
+    List userMap = userMapTemp["userList"];
+    users.doc(user.uid).collection("userDetails").add({
+      'username': username,
+      'avatar': avatar, // 42
+    }).then((value) {
+      print("User Added");
+      userMap.add(user.uid);
+      rooms.doc("userMap").update({"userList": userMap});
+    }).catchError((error) => print("Failed to add user: $error"));
   }
 
   Future<void> addRoom(String roomName, User user) async {
@@ -54,7 +75,7 @@ class FirebaseFirestoreRepo {
 
   Future<void> deleteRoom({roomDocID, userRoomID}) async {
     AuthRepository authRepository = AuthRepository();
-    var uid = authRepository.getUser().uid;
+    var uid = authRepository.getUser()?.uid;
     print(uid);
     DocumentSnapshot temp = await rooms.doc(roomDocID).get();
     Map<String, dynamic> roomData = temp.data()! as Map<String, dynamic>;
@@ -75,7 +96,7 @@ class FirebaseFirestoreRepo {
 
   Future<dynamic> joinRoom({roomCode}) async {
     try {
-      User user = authRepository.getUser();
+      User user = authRepository.getUser()!;
       var uid = user.uid;
       //adding the details in room
       DocumentSnapshot roomMapTemp = await rooms.doc("map").get();

@@ -78,13 +78,35 @@ class LandingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Stream documentStream = FirebaseFirestore.instance
-        .collection('users')
+        .collection('USERS')
         .doc(user.uid.toString())
         .collection("rooms")
         .orderBy("time", descending: true)
         .snapshots();
     return Scaffold(
       resizeToAvoidBottomInset: false,
+      drawer: SafeArea(
+        child: Drawer(
+          backgroundColor: cooloors.darkAppBarColor,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: Text(
+                    "Hello, ${user.displayName}",
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
       appBar: AppBar(
         title: const Text("Just Split"),
         elevation: 0.0,

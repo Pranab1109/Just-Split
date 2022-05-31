@@ -75,63 +75,64 @@ Widget createAndJoinRoomModalSheet(
               ),
             ),
             Form(
-                key: _formKeyTwo,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Divider(
-                      height: 5.0,
-                      // color: Colors.white,
+              key: _formKeyTwo,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Divider(
+                    height: 5.0,
+                    // color: Colors.white,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20.0),
+                    child: Text(
+                      "Join room",
+                      style: TextStyle(
+                          // color: Colors.white,
+                          color: cooloors.darkTextColor,
+                          fontWeight: FontWeight.bold),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 20.0),
-                      child: Text(
-                        "Join room",
-                        style: TextStyle(
-                            // color: Colors.white,
-                            color: cooloors.darkTextColor,
-                            fontWeight: FontWeight.bold),
-                      ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: MyTextFieldTwo(
+                      hintText: "Room Code",
+                      inputController: joinEditingController,
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: MyTextFieldTwo(
-                        hintText: "Room Code",
-                        inputController: joinEditingController,
-                      ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(
+                      bottom: MediaQuery.of(context).viewInsets.bottom,
+                      left: 8.0,
+                      right: 8.0,
                     ),
-                    Padding(
-                      padding: EdgeInsets.only(
-                        bottom: MediaQuery.of(context).viewInsets.bottom,
-                        left: 8.0,
-                        right: 8.0,
-                      ),
-                      child: ElevatedButton(
-                          // style: ElevatedButton.styleFrom(
-                          //     primary: Colors.white),
-                          onPressed: () async {
-                            //todo : join room
-                            joinRoom(context);
-                          },
-                          child: SizedBox(
-                            height: 50.0,
-                            width: MediaQuery.of(context).size.width * 0.9,
-                            child: const Center(
-                              child: Text(
-                                "Join Room",
-                                style: TextStyle(
-                                    // color: Colors.black,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18.0),
-                              ),
+                    child: ElevatedButton(
+                        // style: ElevatedButton.styleFrom(
+                        //     primary: Colors.white),
+                        onPressed: () async {
+                          //todo : join room
+                          joinRoom(context);
+                        },
+                        child: SizedBox(
+                          height: 50.0,
+                          width: MediaQuery.of(context).size.width * 0.9,
+                          child: const Center(
+                            child: Text(
+                              "Join Room",
+                              style: TextStyle(
+                                  // color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18.0),
                             ),
-                          )),
-                    ),
-                    const SizedBox(
-                      height: 10.0,
-                    ),
-                  ],
-                ))
+                          ),
+                        )),
+                  ),
+                  const SizedBox(
+                    height: 10.0,
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),

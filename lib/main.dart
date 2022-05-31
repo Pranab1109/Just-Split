@@ -63,7 +63,7 @@ class MyApp extends StatelessWidget {
                   return MaterialApp(
                     theme: themeData,
                     home: LandingPage(
-                      user: AuthRepository().getUser(),
+                      user: AuthRepository().getUser()!,
                     ),
                   );
                 }

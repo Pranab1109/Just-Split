@@ -80,7 +80,7 @@ class AuthRepository {
     return null;
   }
 
-  User getUser() {
+  User? getUser() {
     return FirebaseAuth.instance.currentUser!;
   }
 }
