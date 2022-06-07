@@ -58,6 +58,7 @@ class FirebaseFirestoreRepo {
       "roomName": roomName,
       "users": [user.uid],
       "totalSpent": 0,
+      "bills": []
     });
     rooms.doc("map").update({roomID: roomUID.id});
     await users
@@ -134,5 +135,39 @@ class FirebaseFirestoreRepo {
         "message": "Room code does not exist!",
       };
     }
+  }
+
+  Future<int> getAvatar(uid) async {
+    try {
+      var temp = await users.doc(uid).collection("userDetails").get();
+      return temp.docs[0]["avatar"];
+    } catch (e) {
+      return 1;
+    }
+  }
+
+  Future<void> addBill({roomDocID, amount, desc, userName}) async {
+    DocumentSnapshot temp = await rooms.doc(roomDocID).get();
+    Map<String, dynamic> roomData = temp.data()! as Map<String, dynamic>;
+    List bills = roomData["bills"];
+    User user = authRepository.getUser()!;
+    var uid = user.uid;
+    bills.add({
+      "userName": userName,
+      "amount": amount,
+      "desc": desc,
+      "time": Timestamp.now(),
+      "uid": uid
+    });
+    try {
+      await rooms.doc(roomDocID).set({"bills": bills}, SetOptions(merge: true));
+
+      /*
+        "userName": userName,
+        "amount": amount,
+        "desc": desc,
+        "time": Timestamp.now()
+      */
+    } catch (e) {}
   }
 }

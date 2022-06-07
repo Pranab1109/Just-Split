@@ -107,10 +107,7 @@ Widget createAndJoinRoomModalSheet(
                       right: 8.0,
                     ),
                     child: ElevatedButton(
-                        // style: ElevatedButton.styleFrom(
-                        //     primary: Colors.white),
                         onPressed: () async {
-                          //todo : join room
                           joinRoom(context);
                         },
                         child: SizedBox(

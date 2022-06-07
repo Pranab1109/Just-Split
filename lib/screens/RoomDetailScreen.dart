@@ -1,7 +1,10 @@
-import 'package:cloud_firestore/cloud_firestore.dart' as firebase;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:just_split/Services/AuthRepo.dart';
+import 'package:just_split/Services/FirebaseFirestoreRepo.dart';
 import 'package:just_split/utils/Cooloors.dart';
+import 'package:just_split/utils/buildUserListRoomPage.dart';
 
 import '../utils/BlobDesign.dart';
 import '../utils/MyTextFieldTwo.dart';
@@ -19,7 +22,8 @@ class RoomDetailScreen extends StatelessWidget {
   final Cooloors cooloors = Cooloors();
 
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController joinEditingController = TextEditingController();
+  final TextEditingController amountEditingController = TextEditingController();
+  final TextEditingController descEditingController = TextEditingController();
 
   void copyText(context) {
     Clipboard.setData(ClipboardData(text: roomCode.toString()))
@@ -29,14 +33,44 @@ class RoomDetailScreen extends StatelessWidget {
             )));
   }
 
+  final user = AuthRepository().getUser();
+
+  void addBill(context) async {
+    if (_formKey.currentState!.validate()) {
+      RepositoryProvider.of<FirebaseFirestoreRepo>(context).addBill(
+          amount: amountEditingController.text,
+          desc: descEditingController.text,
+          roomDocID: roomID,
+          userName: user?.displayName);
+      descEditingController.text = "";
+      amountEditingController.text = "";
+      Navigator.pop(context);
+    }
+  }
+
+  final FirebaseFirestoreRepo firebaseFirestoreRepo = FirebaseFirestoreRepo();
+
   @override
   Widget build(BuildContext context) {
-    Stream documentStream = firebase.FirebaseFirestore.instance
-        .collection('ROOMS')
-        .doc(roomID)
-        .snapshots();
+    final uid = user?.uid;
+    Stream documentStream = firebaseFirestoreRepo.rooms.doc(roomID).snapshots();
     final size = MediaQuery.of(context).size;
     return Scaffold(
+      drawer: Drawer(
+        backgroundColor: cooloors.darkAppBarColor,
+        child: SizedBox(
+          height: 200,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Expanded(
+                  child: buildUserList(
+                roomID: roomID,
+              )),
+            ],
+          ),
+        ),
+      ),
       body: SafeArea(
         child: StreamBuilder<dynamic>(
             stream: documentStream,
@@ -51,12 +85,31 @@ class RoomDetailScreen extends StatelessWidget {
                         size, context, data["totalSpent"].toString()),
                     Expanded(
                       child: ListView.builder(
-                          itemCount: data["users"].length,
+                          itemCount: data["bills"].length,
                           physics: const BouncingScrollPhysics(),
                           itemBuilder: (context, i) {
-                            return Text(
-                              data["users"][i].toString(),
-                              style: const TextStyle(color: Colors.amber),
+                            var item = data["bills"][i];
+                            return Align(
+                              alignment: item["uid"] == uid
+                                  ? Alignment.bottomRight
+                                  : Alignment.bottomLeft,
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Container(
+                                  // padding: const EdgeInsets.all(5.0),
+                                  width: 100,
+                                  color: Colors.white,
+
+                                  // decoration: const BoxDecoration(),
+                                  child: Column(
+                                    children: [
+                                      Text(item["userName"].toString()),
+                                      Text(item["amount"].toString()),
+                                      Text(item["desc"].toString()),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             );
                           }),
                     ),
@@ -112,7 +165,7 @@ class RoomDetailScreen extends StatelessWidget {
                                                     child: MyTextFieldTwo(
                                                       hintText: "Amount",
                                                       inputController:
-                                                          joinEditingController,
+                                                          amountEditingController,
                                                     ),
                                                   ),
                                                   Padding(
@@ -123,7 +176,7 @@ class RoomDetailScreen extends StatelessWidget {
                                                     child: MyTextFieldTwo(
                                                       hintText: "Description",
                                                       inputController:
-                                                          joinEditingController,
+                                                          descEditingController,
                                                     ),
                                                   ),
                                                   Padding(
@@ -137,7 +190,7 @@ class RoomDetailScreen extends StatelessWidget {
                                                     ),
                                                     child: ElevatedButton(
                                                         onPressed: () async {
-                                                          //todo : join room
+                                                          addBill(context);
                                                         },
                                                         child: SizedBox(
                                                           height: 50.0,
@@ -209,22 +262,31 @@ class RoomDetailScreen extends StatelessWidget {
               Column(
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        roomCode,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                      ),
                       IconButton(
-                        onPressed: () {
-                          copyText(context);
-                        },
-                        icon: const Icon(Icons.copy),
-                        splashRadius: 32.0,
-                        splashColor: Colors.black87,
+                          onPressed: () {
+                            Scaffold.of(context).openDrawer();
+                          },
+                          icon: const Icon(Icons.menu_rounded)),
+                      Row(
+                        children: [
+                          Text(
+                            roomCode,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              copyText(context);
+                            },
+                            icon: const Icon(Icons.copy),
+                            splashRadius: 32.0,
+                            splashColor: Colors.black87,
+                          ),
+                        ],
                       ),
                     ],
                   ),
