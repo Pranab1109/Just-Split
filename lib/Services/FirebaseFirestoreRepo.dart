@@ -137,37 +137,53 @@ class FirebaseFirestoreRepo {
     }
   }
 
-  Future<int> getAvatar(uid) async {
+  Future<dynamic> getAvatar(uid) async {
     try {
       var temp = await users.doc(uid).collection("userDetails").get();
-      return temp.docs[0]["avatar"];
+      return {
+        "avatar": temp.docs[0]["avatar"],
+        "username": temp.docs[0]["username"]
+      };
     } catch (e) {
       return 1;
     }
   }
 
   Future<void> addBill({roomDocID, amount, desc, userName}) async {
-    DocumentSnapshot temp = await rooms.doc(roomDocID).get();
-    Map<String, dynamic> roomData = temp.data()! as Map<String, dynamic>;
-    List bills = roomData["bills"];
-    User user = authRepository.getUser()!;
-    var uid = user.uid;
-    bills.add({
-      "userName": userName,
-      "amount": amount,
-      "desc": desc,
-      "time": Timestamp.now(),
-      "uid": uid
-    });
     try {
-      await rooms.doc(roomDocID).set({"bills": bills}, SetOptions(merge: true));
-
-      /*
+      DocumentSnapshot temp = await rooms.doc(roomDocID).get();
+      Map<String, dynamic> roomData = temp.data()! as Map<String, dynamic>;
+      List bills = roomData["bills"];
+      User user = authRepository.getUser()!;
+      var uid = user.uid;
+      bills.add({
         "userName": userName,
         "amount": amount,
         "desc": desc,
-        "time": Timestamp.now()
-      */
+        "time": Timestamp.now(),
+        "uid": uid,
+        "active": true,
+      });
+      var total = roomData["totalSpent"];
+      total = total + amount;
+      await rooms
+          .doc(roomDocID)
+          .set({"bills": bills, "totalSpent": total}, SetOptions(merge: true));
+    } catch (e) {}
+  }
+
+  Future<void> deleteBill(index, roomDocID) async {
+    try {
+      DocumentSnapshot temp = await rooms.doc(roomDocID).get();
+      Map<String, dynamic> roomData = temp.data()! as Map<String, dynamic>;
+      List bills = roomData["bills"];
+      int deleteAmount = bills[index]["amount"];
+      bills.removeAt(index);
+      var total = roomData["totalSpent"];
+      total = total - deleteAmount;
+      await rooms
+          .doc(roomDocID)
+          .set({"bills": bills, "totalSpent": total}, SetOptions(merge: true));
     } catch (e) {}
   }
 }

@@ -8,9 +8,12 @@ Widget roomTile(BuildContext context, Map<String, dynamic> data,
   return Container(
     height: 80.0,
     width: MediaQuery.of(context).size.width * 0.8,
-    decoration: const BoxDecoration(
-        color: Color.fromARGB(150, 66, 66, 66),
-        borderRadius: BorderRadius.all(Radius.circular(5.0))),
+    decoration: BoxDecoration(
+      color: cooloors.darkTileColor,
+      borderRadius: const BorderRadius.all(
+        Radius.circular(5.0),
+      ),
+    ),
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [

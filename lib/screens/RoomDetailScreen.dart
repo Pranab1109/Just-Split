@@ -4,9 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:just_split/Services/AuthRepo.dart';
 import 'package:just_split/Services/FirebaseFirestoreRepo.dart';
 import 'package:just_split/utils/Cooloors.dart';
+import 'package:just_split/utils/RoomCardWidget.dart';
 import 'package:just_split/utils/buildUserListRoomPage.dart';
 
-import '../utils/BlobDesign.dart';
 import '../utils/MyTextFieldTwo.dart';
 
 class RoomDetailScreen extends StatelessWidget {
@@ -30,6 +30,7 @@ class RoomDetailScreen extends StatelessWidget {
         .then((_) => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
               content: Text("Room Code Copied"),
               behavior: SnackBarBehavior.floating,
+              duration: Duration(milliseconds: 700),
             )));
   }
 
@@ -38,7 +39,7 @@ class RoomDetailScreen extends StatelessWidget {
   void addBill(context) async {
     if (_formKey.currentState!.validate()) {
       RepositoryProvider.of<FirebaseFirestoreRepo>(context).addBill(
-          amount: amountEditingController.text,
+          amount: int.parse(amountEditingController.text),
           desc: descEditingController.text,
           roomDocID: roomID,
           userName: user?.displayName);
@@ -46,6 +47,11 @@ class RoomDetailScreen extends StatelessWidget {
       amountEditingController.text = "";
       Navigator.pop(context);
     }
+  }
+
+  void deleteBill(context, index) async {
+    RepositoryProvider.of<FirebaseFirestoreRepo>(context)
+        .deleteBill(index, roomID);
   }
 
   final FirebaseFirestoreRepo firebaseFirestoreRepo = FirebaseFirestoreRepo();
@@ -81,32 +87,70 @@ class RoomDetailScreen extends StatelessWidget {
               } else {
                 return Column(
                   children: [
-                    roomCardWidget(
-                        size, context, data["totalSpent"].toString()),
+                    roomCardWidget(size, context, data["totalSpent"].toString(),
+                        roomCode, roomName, copyText),
                     Expanded(
                       child: ListView.builder(
                           itemCount: data["bills"].length,
                           physics: const BouncingScrollPhysics(),
-                          itemBuilder: (context, i) {
-                            var item = data["bills"][i];
+                          itemBuilder: (context, index) {
+                            var item = data["bills"][index];
                             return Align(
                               alignment: item["uid"] == uid
                                   ? Alignment.bottomRight
                                   : Alignment.bottomLeft,
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
-                                child: Container(
-                                  // padding: const EdgeInsets.all(5.0),
-                                  width: 100,
-                                  color: Colors.white,
-
-                                  // decoration: const BoxDecoration(),
-                                  child: Column(
-                                    children: [
-                                      Text(item["userName"].toString()),
-                                      Text(item["amount"].toString()),
-                                      Text(item["desc"].toString()),
-                                    ],
+                                child: InkWell(
+                                  borderRadius: const BorderRadius.all(
+                                      Radius.circular(5.0)),
+                                  enableFeedback: true,
+                                  splashColor: Colors.white,
+                                  highlightColor: Colors.white,
+                                  onLongPress: () async {
+                                    if (item["uid"] == uid) {
+                                      var delete =
+                                          await onDeleteBillPop(context);
+                                      if (delete) {
+                                        deleteBill(context, index);
+                                      }
+                                    }
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(5.0),
+                                    width: size.width * 0.35,
+                                    decoration: BoxDecoration(
+                                      color: cooloors.darkTileColor
+                                          .withOpacity(0.99),
+                                      borderRadius: const BorderRadius.all(
+                                        Radius.circular(5.0),
+                                      ),
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          item["userName"].toString(),
+                                          style: TextStyle(
+                                              color: cooloors.darkTextColor,
+                                              fontSize: 12),
+                                        ),
+                                        Text(
+                                          item["amount"].toString(),
+                                          style: TextStyle(
+                                              color: cooloors.darkTextColor,
+                                              fontSize: 36,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        Text(
+                                          item["desc"].toString(),
+                                          style: TextStyle(
+                                            color: cooloors.darkSubTextColor,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
@@ -163,6 +207,7 @@ class RoomDetailScreen extends StatelessWidget {
                                                             left: 8.0,
                                                             right: 8.0),
                                                     child: MyTextFieldTwo(
+                                                      isNum: true,
                                                       hintText: "Amount",
                                                       inputController:
                                                           amountEditingController,
@@ -245,80 +290,79 @@ class RoomDetailScreen extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget roomCardWidget(Size size, BuildContext context, String totalSpent) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(5.0),
-        child: Container(
-          width: size.width,
-          height: 200,
-          color: cooloors.lightTileColor,
-          child: Stack(
-            clipBehavior: Clip.hardEdge,
-            children: [
-              ...designs,
-              Column(
+Future<bool> onDeleteBillPop(BuildContext context) async {
+  bool signout = false;
+  await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+            backgroundColor: Colors.black87,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            contentPadding:
+                const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
+            content: Container(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
+                  const Text(
+                    "Delete Bill?",
+                    style: TextStyle(color: Colors.white),
+                    // style: subtitle1White,
+                  ),
+                  const SizedBox(
+                    height: 36,
+                  ),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      IconButton(
-                          onPressed: () {
-                            Scaffold.of(context).openDrawer();
-                          },
-                          icon: const Icon(Icons.menu_rounded)),
-                      Row(
-                        children: [
-                          Text(
-                            roomCode,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                            ),
+                      Expanded(
+                          child: InkWell(
+                        onTap: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Container(
+                          height: 40,
+                          decoration: BoxDecoration(
+                            //color: blue,
+                            borderRadius: BorderRadius.circular(6),
                           ),
-                          IconButton(
-                            onPressed: () {
-                              copyText(context);
-                            },
-                            icon: const Icon(Icons.copy),
-                            splashRadius: 32.0,
-                            splashColor: Colors.black87,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const Spacer(),
-                  Center(
-                      child: Text(
-                    "₹ $totalSpent",
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 26.0,
-                    ),
-                  )),
-                  const Spacer(),
-                  Align(
-                    alignment: Alignment.bottomLeft,
-                    child: Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0, left: 8.0),
-                      child: Text(
-                        roomName,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
+                          //color: blue,
+                          child: const Center(
+                              child: Text(
+                            "No",
+                            style: TextStyle(color: Colors.white),
+                            // style: button.copyWith(color: blue),
+                          )),
                         ),
-                      ),
-                    ),
-                  ),
+                      )),
+                      Expanded(
+                          child: InkWell(
+                        onTap: () {
+                          signout = true;
+                          Navigator.of(context).pop();
+                        },
+                        child: Container(
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: Colors.white12,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          //color: blue,
+                          child: const Center(
+                              child: Text(
+                            "Yes",
+                            style: TextStyle(color: Colors.white),
+                            // style: button,
+                          )),
+                        ),
+                      ))
+                    ],
+                  )
                 ],
               ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+            ),
+          ));
+  return signout;
 }

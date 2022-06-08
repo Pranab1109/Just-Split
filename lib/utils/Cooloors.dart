@@ -8,12 +8,13 @@ class Cooloors {
   Color darkBackgroundColor = const Color(0xff16161a);
 
   Color lightTileColor = const Color(0xfff3d2c1);
-  Color darkTileColor = const Color(0xff72757e);
+  Color darkTileColor = const Color.fromARGB(255, 41, 42, 43);
 
   Color buttonColor = const Color(0xff8bd3dd);
 
   Color lightTextColor = const Color(0xff001858);
-  Color darkTextColor = const Color(0xfffffffe);
+  Color darkTextColor = const Color(0xfffffffe).withOpacity(0.87);
+  Color darkSubTextColor = const Color(0xfffffffe).withOpacity(0.6);
 
   Color darkParaColor = const Color(0xff94a1b2);
 

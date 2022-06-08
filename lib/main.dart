@@ -41,37 +41,38 @@ class MyApp extends StatelessWidget {
           ColorScheme.fromSwatch().copyWith(secondary: cooloors.buttonColor),
     );
     return MultiRepositoryProvider(
-        // create: (context) => AuthRepository(),
-        providers: [
-          RepositoryProvider<AuthRepository>(
-              create: (context) => AuthRepository()),
-          RepositoryProvider<FirebaseFirestoreRepo>(
-              create: (context) => FirebaseFirestoreRepo()),
-        ],
-        child: BlocProvider(
-            create: (context) => AuthBloc(
-                  authRepository:
-                      RepositoryProvider.of<AuthRepository>(context),
-                  firebaseFirestoreRepo:
-                      RepositoryProvider.of<FirebaseFirestoreRepo>(context),
+      // create: (context) => AuthRepository(),
+      providers: [
+        RepositoryProvider<AuthRepository>(
+            create: (context) => AuthRepository()),
+        RepositoryProvider<FirebaseFirestoreRepo>(
+            create: (context) => FirebaseFirestoreRepo()),
+      ],
+      child: BlocProvider(
+        create: (context) => AuthBloc(
+          authRepository: RepositoryProvider.of<AuthRepository>(context),
+          firebaseFirestoreRepo:
+              RepositoryProvider.of<FirebaseFirestoreRepo>(context),
+        ),
+        child: FutureBuilder(
+          initialData: false,
+          future: PreferenceService().getAuthStatus(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData && snapshot.data == true) {
+              return MaterialApp(
+                theme: themeData,
+                home: LandingPage(
+                  user: AuthRepository().getUser()!,
                 ),
-            child: FutureBuilder(
-              initialData: false,
-              future: PreferenceService().getAuthStatus(),
-              builder: (context, snapshot) {
-                if (snapshot.hasData && snapshot.data == true) {
-                  return MaterialApp(
-                    theme: themeData,
-                    home: LandingPage(
-                      user: AuthRepository().getUser()!,
-                    ),
-                  );
-                }
-                return MaterialApp(
-                  theme: themeData,
-                  home: LoginPage(),
-                );
-              },
-            )));
+              );
+            }
+            return MaterialApp(
+              theme: themeData,
+              home: LoginPage(),
+            );
+          },
+        ),
+      ),
+    );
   }
 }

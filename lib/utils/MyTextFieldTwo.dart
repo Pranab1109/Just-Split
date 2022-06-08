@@ -3,12 +3,13 @@ import 'package:flutter/material.dart';
 class MyTextFieldTwo extends StatelessWidget {
   final TextEditingController inputController;
   final String hintText;
-
-  const MyTextFieldTwo({
-    Key? key,
-    required this.inputController,
-    required this.hintText,
-  }) : super(key: key);
+  bool isNum;
+  MyTextFieldTwo(
+      {Key? key,
+      required this.inputController,
+      required this.hintText,
+      this.isNum = false})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +26,7 @@ class MyTextFieldTwo extends StatelessWidget {
             controller: inputController,
             // autofocus: true,
             textCapitalization: TextCapitalization.sentences,
-
+            keyboardType: isNum ? TextInputType.number : TextInputType.text,
             validator: (value) {
               if (value != null && value.isEmpty) {
                 return 'Enter a valid name';
@@ -39,6 +40,7 @@ class MyTextFieldTwo extends StatelessWidget {
               label: Text(hintText),
               labelStyle: const TextStyle(color: primaryColor),
               // prefixIcon: Icon(Icons.email),
+
               filled: true,
               fillColor: accentColor,
               hintText: hintText,
