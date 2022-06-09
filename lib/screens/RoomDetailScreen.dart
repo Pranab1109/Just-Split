@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:just_split/Services/AuthRepo.dart';
@@ -10,7 +11,7 @@ import 'package:just_split/utils/buildUserListRoomPage.dart';
 import '../utils/MyTextFieldTwo.dart';
 
 class RoomDetailScreen extends StatelessWidget {
-  final dynamic roomID;
+  final String roomID;
   final String roomName;
   final String roomCode;
   RoomDetailScreen(
@@ -24,6 +25,15 @@ class RoomDetailScreen extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController amountEditingController = TextEditingController();
   final TextEditingController descEditingController = TextEditingController();
+  final ScrollController _controller = ScrollController();
+  void _scrollDown() {
+    _controller.animateTo(
+      _controller.position.maxScrollExtent,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeIn,
+    );
+    needScroll = false;
+  }
 
   void copyText(context) {
     Clipboard.setData(ClipboardData(text: roomCode.toString()))
@@ -55,7 +65,8 @@ class RoomDetailScreen extends StatelessWidget {
   }
 
   final FirebaseFirestoreRepo firebaseFirestoreRepo = FirebaseFirestoreRepo();
-
+  bool needScroll = false;
+  bool firstTime = true;
   @override
   Widget build(BuildContext context) {
     final uid = user?.uid;
@@ -81,20 +92,47 @@ class RoomDetailScreen extends StatelessWidget {
         child: StreamBuilder<dynamic>(
             stream: documentStream,
             builder: (context, snapshot) {
+              // if (needScroll &&
+              //     !firstTime &&
+              //     _controller.offset == _controller.position.maxScrollExtent) {
+              //   print(_controller.offset);
+              //   print(_controller.position.maxScrollExtent);
+              //   _scrollDown();
+              // }
               var data = snapshot.data;
               if (data == null) {
                 return const Center(child: CircularProgressIndicator());
               } else {
+                if (firstTime ||
+                    _controller.position.maxScrollExtent ==
+                        _controller.offset) {
+                  SchedulerBinding.instance.addPostFrameCallback((_) {
+                    _controller.animateTo(
+                      _controller.position.maxScrollExtent,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeIn,
+                    );
+                    firstTime = false;
+                  });
+                  needScroll = true;
+                }
                 return Column(
                   children: [
                     roomCardWidget(size, context, data["totalSpent"].toString(),
                         roomCode, roomName, copyText),
                     Expanded(
                       child: ListView.builder(
+                          controller: _controller,
                           itemCount: data["bills"].length,
                           physics: const BouncingScrollPhysics(),
                           itemBuilder: (context, index) {
                             var item = data["bills"][index];
+                            // if (_controller.hasClients &&
+                            //     _controller.positions.isNotEmpty) {
+                            //   _controller
+                            //       .jumpTo(_controller.position.maxScrollExtent);
+                            // }
+
                             return Align(
                               alignment: item["uid"] == uid
                                   ? Alignment.bottomRight
@@ -116,40 +154,45 @@ class RoomDetailScreen extends StatelessWidget {
                                       }
                                     }
                                   },
-                                  child: Container(
-                                    padding: const EdgeInsets.all(5.0),
-                                    width: size.width * 0.35,
-                                    decoration: BoxDecoration(
-                                      color: cooloors.darkTileColor
-                                          .withOpacity(0.99),
-                                      borderRadius: const BorderRadius.all(
-                                        Radius.circular(5.0),
+                                  child: ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                        minWidth: size.width * 0.35,
+                                        maxWidth: size.width * 0.6),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(5.0),
+                                      // width: size.width * 0.35,
+                                      decoration: BoxDecoration(
+                                        color: cooloors.darkTileColor
+                                            .withOpacity(0.99),
+                                        borderRadius: const BorderRadius.all(
+                                          Radius.circular(5.0),
+                                        ),
                                       ),
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          item["userName"].toString(),
-                                          style: TextStyle(
-                                              color: cooloors.darkTextColor,
-                                              fontSize: 12),
-                                        ),
-                                        Text(
-                                          item["amount"].toString(),
-                                          style: TextStyle(
-                                              color: cooloors.darkTextColor,
-                                              fontSize: 36,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                        Text(
-                                          item["desc"].toString(),
-                                          style: TextStyle(
-                                            color: cooloors.darkSubTextColor,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            item["userName"].toString(),
+                                            style: TextStyle(
+                                                color: cooloors.lightTileColor,
+                                                fontSize: 12),
                                           ),
-                                        ),
-                                      ],
+                                          Text(
+                                            "₹ ${item["amount"].toString()}",
+                                            style: TextStyle(
+                                                color: cooloors.darkTextColor,
+                                                fontSize: 36,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          Text(
+                                            item["desc"].toString(),
+                                            style: TextStyle(
+                                              color: cooloors.darkSubTextColor,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
