@@ -3,14 +3,14 @@ import 'package:just_split/Services/FirebaseFirestoreRepo.dart';
 import 'package:just_split/utils/Avatars.dart';
 import 'package:just_split/utils/TextStyler.dart';
 
-class buildUserList extends StatefulWidget {
-  const buildUserList({Key? key, required this.roomID}) : super(key: key);
+class BuildUserList extends StatefulWidget {
+  const BuildUserList({Key? key, required this.roomID}) : super(key: key);
   final String roomID;
   @override
-  State<buildUserList> createState() => _buildUserListState();
+  State<BuildUserList> createState() => _BuildUserListState();
 }
 
-class _buildUserListState extends State<buildUserList> {
+class _BuildUserListState extends State<BuildUserList> {
   List<dynamic> userList = [];
 
   final FirebaseFirestoreRepo firebaseFirestoreRepo = FirebaseFirestoreRepo();
@@ -59,7 +59,6 @@ class _buildUserListState extends State<buildUserList> {
                               future: firebaseFirestoreRepo
                                   .getAvatar(userList[i].toString()),
                               builder: (context, snapshot) {
-                                print(snapshot.data);
                                 if (snapshot.data == null) {
                                   return const LinearProgressIndicator();
                                 }

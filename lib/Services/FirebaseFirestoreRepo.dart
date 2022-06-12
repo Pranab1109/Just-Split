@@ -58,7 +58,8 @@ class FirebaseFirestoreRepo {
       "roomName": roomName,
       "users": [user.uid],
       "totalSpent": 0,
-      "bills": []
+      "bills": [],
+      "userMap": {user.uid: user.displayName},
     });
     rooms.doc("map").update({roomID: roomUID.id});
     await users
@@ -81,6 +82,7 @@ class FirebaseFirestoreRepo {
     DocumentSnapshot temp = await rooms.doc(roomDocID).get();
     Map<String, dynamic> roomData = temp.data()! as Map<String, dynamic>;
     var usersList = roomData["users"];
+    Map userMap = roomData["userMap"];
     final deletedRoom = rooms.doc(roomDocID);
     print(deletedRoom);
     final userDeletedRoom = users.doc(uid).collection("rooms").doc(userRoomID);
@@ -90,7 +92,9 @@ class FirebaseFirestoreRepo {
       await deletedRoom.delete().catchError((e) => print(e));
     } else {
       usersList.remove(uid);
+      userMap.remove(uid);
       roomData["users"] = usersList;
+      roomData["userMap"] = userMap;
       deletedRoom.update(roomData);
     }
   }
@@ -107,6 +111,7 @@ class FirebaseFirestoreRepo {
       DocumentSnapshot temp = await rooms.doc(roomDocID).get();
       Map<String, dynamic> roomData = temp.data()! as Map<String, dynamic>;
       List usersList = roomData["users"];
+      Map userMap = roomData["userMap"];
       if (usersList.contains(uid)) {
         return {
           "success": false,
@@ -114,8 +119,10 @@ class FirebaseFirestoreRepo {
         };
       }
       usersList.add(uid);
+      userMap[uid] = user.displayName;
       final updatedRoom = rooms.doc(roomDocID);
       roomData["users"] = usersList;
+      roomData["userMap"] = userMap;
       await updatedRoom.update(roomData);
 
       //adding the details in user
@@ -177,13 +184,36 @@ class FirebaseFirestoreRepo {
       DocumentSnapshot temp = await rooms.doc(roomDocID).get();
       Map<String, dynamic> roomData = temp.data()! as Map<String, dynamic>;
       List bills = roomData["bills"];
-      int deleteAmount = bills[index]["amount"];
+      num deleteAmount = bills[index]["amount"];
       bills.removeAt(index);
       var total = roomData["totalSpent"];
       total = total - deleteAmount;
       await rooms
           .doc(roomDocID)
           .set({"bills": bills, "totalSpent": total}, SetOptions(merge: true));
+    } catch (e) {}
+  }
+
+  Future<void> storeResolvedBill(roomDocID, resolved) async {
+    try {
+      DocumentSnapshot temp = await rooms.doc(roomDocID).get();
+      Map<String, dynamic> roomData = temp.data()! as Map<String, dynamic>;
+      var resolvedBills = roomData["resolvedBills"] ?? [];
+      for (var v in resolved) {
+        resolvedBills.add({"from": v[1], "to": v[0], "amount": v[2]});
+      }
+      List bills = roomData["bills"];
+      for (var bill in bills) {
+        bill["active"] = false;
+      }
+      // print("RESOLVED BILLS : ");
+      // print(resolvedBills);
+      // print("BILLS : ");
+      // print(bills);
+      await rooms.doc(roomDocID).set({
+        "resolvedBills": resolvedBills,
+        "bills": bills,
+      }, SetOptions(merge: true));
     } catch (e) {}
   }
 }

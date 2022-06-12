@@ -1,3 +1,5 @@
+import 'package:just_split/Services/FirebaseFirestoreRepo.dart';
+
 class SplitService {
   List<dynamic> bills;
   List<dynamic> users;
@@ -52,8 +54,13 @@ class SplitService {
     return count + 1;
   }
 
-  split() {
+  split(roomDocID) {
+    FirebaseFirestoreRepo firestoreRepo = FirebaseFirestoreRepo();
     List<dynamic> activeBills = getActiveBills();
+    if (activeBills.isEmpty) {
+      return;
+    }
+    // print(activeBills);
     List<num> individualPay = [];
     Map<dynamic, int> usersMap = {};
     int i = 0;
@@ -80,18 +87,22 @@ class SplitService {
     }
     billmap.clear();
     List<List<dynamic>> bills = [];
-    print(individualPay);
-    print(getters);
-    print(payers);
+    // print(individualPay);
+    // print(getters);
+    // print(payers);
+    if (payers.isEmpty || getters.isEmpty) {
+      return;
+    }
     int x = recursion(getters, payers, bills, 0);
     List<List<dynamic>> ans = billmap[x]!;
     for (var tr in ans) {
       tr[0] = users[tr[0]];
       tr[1] = users[tr[1]];
       tr[2] = double.parse((tr[2]).toStringAsFixed(2));
-      print(tr);
-      // print('${users[tr[0]]} to ${users[tr[1]]} : ${tr[2]}');
+      // print(tr);
     }
+    firestoreRepo.storeResolvedBill(roomDocID, ans);
+    return ans;
   }
 }
 /* 

@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:just_split/Services/AuthRepo.dart';
 import 'package:just_split/Services/FirebaseFirestoreRepo.dart';
 import 'package:just_split/Services/SplitService.dart';
+import 'package:just_split/utils/BuildResolvedBills.dart';
 import 'package:just_split/utils/Cooloors.dart';
 import 'package:just_split/utils/RoomCardWidget.dart';
 import 'package:just_split/utils/buildUserListRoomPage.dart';
@@ -78,27 +79,13 @@ class RoomDetailScreen extends StatelessWidget {
   final DateFormat formatter = DateFormat('dd MMM yy');
   final DateFormat timeformatter = DateFormat('jm');
   bool firstTime = true;
+  Map userMap = {};
   @override
   Widget build(BuildContext context) {
     final uid = user?.uid;
     Stream documentStream = firebaseFirestoreRepo.rooms.doc(roomID).snapshots();
     final size = MediaQuery.of(context).size;
     return Scaffold(
-      drawer: Drawer(
-        backgroundColor: cooloors.darkAppBarColor,
-        child: SizedBox(
-          height: 200,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Expanded(
-                  child: buildUserList(
-                roomID: roomID,
-              )),
-            ],
-          ),
-        ),
-      ),
       body: SafeArea(
         child: StreamBuilder<dynamic>(
             stream: documentStream,
@@ -125,7 +112,7 @@ class RoomDetailScreen extends StatelessWidget {
                           physics: const BouncingScrollPhysics(),
                           itemBuilder: (context, index) {
                             var item = data["bills"][index];
-
+                            userMap[item["uid"]] = item["userName"];
                             Widget separator = index == 0
                                 ? Text(
                                     formatter.format((data["bills"][index]
@@ -166,7 +153,8 @@ class RoomDetailScreen extends StatelessWidget {
                                       splashColor: Colors.white,
                                       highlightColor: Colors.white,
                                       onLongPress: () async {
-                                        if (item["uid"] == uid) {
+                                        if (item["uid"] == uid &&
+                                            item["active"] == true) {
                                           var delete =
                                               await onDeleteBillPop(context);
                                           if (delete) {
@@ -181,8 +169,11 @@ class RoomDetailScreen extends StatelessWidget {
                                         padding: const EdgeInsets.all(5.0),
                                         // width: size.width * 0.35,
                                         decoration: BoxDecoration(
-                                          color: cooloors.darkTileColor
-                                              .withOpacity(0.99),
+                                          color: item["active"]
+                                              ? cooloors.darkTileColor
+                                                  .withOpacity(0.99)
+                                              : cooloors.inactiveColor
+                                                  .withOpacity(0.80),
                                           borderRadius: const BorderRadius.all(
                                             Radius.circular(5.0),
                                           ),
@@ -399,7 +390,7 @@ class RoomDetailScreen extends StatelessWidget {
                                   SplitService splitService = SplitService(
                                       bills: data["bills"],
                                       users: data["users"]);
-                                  splitService.split();
+                                  splitService.split(roomID);
                                 },
                                 child: Container(
                                   padding: const EdgeInsets.all(8),
@@ -416,6 +407,23 @@ class RoomDetailScreen extends StatelessWidget {
                 );
               }
             }),
+      ),
+      drawer: Drawer(
+        backgroundColor: cooloors.darkAppBarColor,
+        child: SizedBox(
+          height: 200,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Expanded(
+                  child: BuildUserList(
+                roomID: roomID,
+              )),
+              Expanded(child: BuildResolvedList(roomID: roomID))
+            ],
+          ),
+        ),
       ),
     );
   }

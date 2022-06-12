@@ -9,6 +9,7 @@ class Cooloors {
 
   Color lightTileColor = const Color(0xfff3d2c1);
   Color darkTileColor = const Color.fromARGB(255, 41, 42, 43);
+  Color inactiveColor = const Color.fromARGB(255, 93, 95, 95);
 
   Color buttonColor = const Color(0xff8bd3dd);
 
