@@ -50,12 +50,23 @@ Widget roomCardWidget(Size size, BuildContext context, String totalSpent,
                 ),
                 const Spacer(),
                 Center(
-                    child: Text(
-                  "₹ $totalSpent",
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 26.0,
-                  ),
+                    child: Column(
+                  children: [
+                    Text(
+                      "₹ $totalSpent",
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 26.0,
+                      ),
+                    ),
+                    const Text(
+                      "Total Spent",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14.0,
+                      ),
+                    ),
+                  ],
                 )),
                 const Spacer(),
                 Align(

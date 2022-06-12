@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:just_split/utils/Cooloors.dart';
+import 'package:intl/intl.dart';
 
 Widget roomTile(BuildContext context, Map<String, dynamic> data,
     DocumentSnapshot<Object?> document, Function deleteRoom) {
   Cooloors cooloors = Cooloors();
+  final DateFormat formatter = DateFormat('dd MMM yy');
   return Container(
     height: 80.0,
     width: MediaQuery.of(context).size.width * 0.8,
@@ -35,9 +37,7 @@ Widget roomTile(BuildContext context, Map<String, dynamic> data,
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                DateTime.parse(data["time"].toDate().toString())
-                    .toString()
-                    .split(" ")[0],
+                formatter.format((data['time'] as Timestamp).toDate()),
                 style: TextStyle(
                     fontSize: 14.0,
                     fontWeight: FontWeight.w300,
