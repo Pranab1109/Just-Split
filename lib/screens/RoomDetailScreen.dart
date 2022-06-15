@@ -239,8 +239,8 @@ class RoomDetailScreen extends StatelessWidget {
                                                       const BorderRadius.all(
                                                           Radius.circular(5.0)),
                                                   child: Container(
-                                                    width: 50,
-                                                    height: 50,
+                                                    width: 40,
+                                                    height: 40,
                                                     color: Colors.black
                                                         .withOpacity(0.8),
                                                     child: const Icon(
@@ -422,7 +422,7 @@ class RoomDetailScreen extends StatelessWidget {
                                   SplitService splitService = SplitService(
                                       bills: data["bills"],
                                       users: data["users"]);
-                                  splitService.split(roomID);
+                                  splitService.split(roomID, context);
                                 },
                                 child: Container(
                                   padding: const EdgeInsets.all(8),
@@ -452,7 +452,11 @@ class RoomDetailScreen extends StatelessWidget {
                   child: BuildUserList(
                 roomID: roomID,
               )),
-              Expanded(child: BuildResolvedList(roomID: roomID))
+              Expanded(
+                  child: BuildResolvedList(
+                roomID: roomID,
+                uid: uid,
+              ))
             ],
           ),
         ),

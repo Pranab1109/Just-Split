@@ -1,5 +1,7 @@
 import 'package:just_split/Services/FirebaseFirestoreRepo.dart';
 
+import '../utils/onWillSplit.dart';
+
 class SplitService {
   List<dynamic> bills;
   List<dynamic> users;
@@ -55,13 +57,17 @@ class SplitService {
     return count + 1;
   }
 
-  split(roomDocID) {
+  split(roomDocID, context) async {
     FirebaseFirestoreRepo firestoreRepo = FirebaseFirestoreRepo();
     List<dynamic> activeBills = getActiveBills();
     if (activeBills.isEmpty) {
       return;
     }
+    var split = await onWillSplit(context);
     // print(activeBills);
+    if (split == false) {
+      return;
+    }
     List<num> individualPay = [];
     Map<dynamic, int> usersMap = {};
     int i = 0;

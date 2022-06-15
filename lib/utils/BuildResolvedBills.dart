@@ -4,15 +4,18 @@ import 'package:just_split/utils/Cooloors.dart';
 
 class BuildResolvedList extends StatelessWidget {
   final roomID;
+  final uid;
   BuildResolvedList({
     Key? key,
     required this.roomID,
+    required this.uid,
   }) : super(key: key);
   final Cooloors cooloors = Cooloors();
 
   final FirebaseFirestoreRepo firebaseFirestoreRepo = FirebaseFirestoreRepo();
   @override
   Widget build(BuildContext context) {
+    print(uid);
     Stream documentStream = firebaseFirestoreRepo.rooms.doc(roomID).snapshots();
     final size = MediaQuery.of(context).size;
     return Padding(
@@ -66,8 +69,18 @@ class BuildResolvedList extends StatelessWidget {
                               padding: const EdgeInsets.only(top: 8.0),
                               child: Container(
                                   padding: const EdgeInsets.all(8.0),
-                                  color:
-                                      cooloors.darkTileColor.withOpacity(0.95),
+                                  decoration: BoxDecoration(
+                                      color: cooloors.darkTileColor
+                                          .withOpacity(0.95),
+                                      border: Border.all(
+                                          width: 2.0,
+                                          color: uid ==
+                                                  resolvedBills[index]["from"]
+                                              ? const Color(0xfff07167)
+                                              : uid ==
+                                                      resolvedBills[index]["to"]
+                                                  ? const Color(0xff87B28A)
+                                                  : Colors.transparent)),
                                   child: Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceAround,
