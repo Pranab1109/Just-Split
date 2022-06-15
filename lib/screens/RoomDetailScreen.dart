@@ -59,7 +59,8 @@ class RoomDetailScreen extends StatelessWidget {
   void addBill(context, name) async {
     if (_formKey.currentState!.validate()) {
       RepositoryProvider.of<FirebaseFirestoreRepo>(context).addBill(
-        amount: num.parse(amountEditingController.text),
+        amount: num.parse(
+            num.parse(amountEditingController.text).toStringAsFixed(2)),
         desc: descEditingController.text,
         roomDocID: roomID,
       );
@@ -163,70 +164,94 @@ class RoomDetailScreen extends StatelessWidget {
                                           }
                                         }
                                       },
-                                      child: Container(
-                                        constraints: BoxConstraints(
-                                            minWidth: size.width * 0.35,
-                                            maxWidth: size.width * 0.6),
-                                        padding: const EdgeInsets.all(5.0),
-                                        // width: size.width * 0.35,
-                                        decoration: BoxDecoration(
-                                          color: item["active"]
-                                              ? cooloors.darkTileColor
-                                                  .withOpacity(0.99)
-                                              : cooloors.inactiveColor
-                                                  .withOpacity(0.80),
-                                          borderRadius: const BorderRadius.all(
-                                            Radius.circular(5.0),
-                                          ),
-                                        ),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              item["userName"].toString(),
-                                              style: TextStyle(
-                                                  color:
-                                                      cooloors.lightTileColor,
-                                                  fontSize: 12),
-                                            ),
-                                            Text(
-                                              "₹ ${item["amount"].toString()}",
-                                              style: TextStyle(
-                                                  color: cooloors.darkTextColor,
-                                                  fontSize: 36,
-                                                  fontWeight: FontWeight.bold),
-                                            ),
-                                            Text(
-                                              item["desc"].toString(),
-                                              style: TextStyle(
-                                                color:
-                                                    cooloors.darkSubTextColor,
+                                      child: Stack(
+                                        alignment: Alignment.topRight,
+                                        children: [
+                                          Container(
+                                            constraints: BoxConstraints(
+                                                minWidth: size.width * 0.35,
+                                                maxWidth: size.width * 0.6),
+                                            padding: const EdgeInsets.all(5.0),
+                                            // width: size.width * 0.35,
+                                            decoration: BoxDecoration(
+                                              color: cooloors.darkTileColor
+                                                  .withOpacity(0.99),
+                                              borderRadius:
+                                                  const BorderRadius.all(
+                                                Radius.circular(5.0),
                                               ),
                                             ),
-                                            Container(
-                                              alignment: Alignment.centerRight,
-                                              width: max(
-                                                  min(
-                                                      item["desc"].length *
-                                                          12.0,
-                                                      size.width * 0.7),
-                                                  size.width * 0.35),
-                                              child: Text(
-                                                timeformatter
-                                                    .format((item['time']
-                                                            as Timestamp)
-                                                        .toDate())
-                                                    .toString(),
-                                                style: TextStyle(
-                                                  color:
-                                                      cooloors.darkSubTextColor,
-                                                  fontSize: 12,
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  item["userName"].toString(),
+                                                  style: TextStyle(
+                                                      color: cooloors
+                                                          .lightTileColor,
+                                                      fontSize: 12),
                                                 ),
-                                              ),
+                                                Text(
+                                                  "₹ ${item["amount"].toString()}",
+                                                  style: TextStyle(
+                                                      color: cooloors
+                                                          .darkTextColor,
+                                                      fontSize: 36,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                ),
+                                                Text(
+                                                  item["desc"].toString(),
+                                                  style: TextStyle(
+                                                    color: cooloors
+                                                        .darkSubTextColor,
+                                                  ),
+                                                ),
+                                                Container(
+                                                  alignment:
+                                                      Alignment.centerRight,
+                                                  width: max(
+                                                      min(
+                                                          item["desc"].length *
+                                                              12.0,
+                                                          size.width * 0.7),
+                                                      size.width * 0.35),
+                                                  child: Text(
+                                                    timeformatter
+                                                        .format((item['time']
+                                                                as Timestamp)
+                                                            .toDate())
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                      color: cooloors
+                                                          .darkSubTextColor,
+                                                      fontSize: 12,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
                                             ),
-                                          ],
-                                        ),
+                                          ),
+                                          !item["active"]
+                                              ? ClipRRect(
+                                                  borderRadius:
+                                                      const BorderRadius.all(
+                                                          Radius.circular(5.0)),
+                                                  child: Container(
+                                                    width: 50,
+                                                    height: 50,
+                                                    color: Colors.black
+                                                        .withOpacity(0.8),
+                                                    child: const Icon(
+                                                      Icons.check,
+                                                      color: Color(0xff87B28A),
+                                                      size: 26.0,
+                                                    ),
+                                                  ),
+                                                )
+                                              : const SizedBox(),
+                                        ],
                                       ),
                                     ),
                                   ),

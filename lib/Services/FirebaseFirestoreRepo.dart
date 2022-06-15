@@ -105,6 +105,7 @@ class FirebaseFirestoreRepo {
       "totalSpent": 0,
       "bills": [],
       "userMap": {user.uid: userName},
+      "resolvedBills": {}
     });
     rooms.doc("map").update({roomID: roomUID.id});
     await users
@@ -114,7 +115,7 @@ class FirebaseFirestoreRepo {
           "roomID": roomID,
           "roomName": roomName,
           "time": Timestamp.now(),
-          "roomUID": roomUID.id
+          "roomUID": roomUID.id,
         })
         .then((value) => print("Room Added"))
         .catchError((error) => print("Failed to add user: $error"));
@@ -245,9 +246,30 @@ class FirebaseFirestoreRepo {
     try {
       DocumentSnapshot temp = await rooms.doc(roomDocID).get();
       Map<String, dynamic> roomData = temp.data()! as Map<String, dynamic>;
-      var resolvedBills = roomData["resolvedBills"] ?? {};
+      Map resolvedBills = roomData["resolvedBills"] ?? {};
       for (var v in resolved) {
-        resolvedBills['${v[1]}:${v[0]}'] = v[2];
+        resolvedBills['${v[1]}:${v[0]}'] =
+            resolvedBills['${v[1]}:${v[0]}'] == null
+                ? v[2]
+                : resolvedBills['${v[1]}:${v[0]}'] + v[2];
+        if (resolvedBills.containsKey('${v[0]}:${v[1]}')) {
+          if (resolvedBills['${v[1]}:${v[0]}'] >
+              resolvedBills['${v[0]}:${v[1]}']) {
+            resolvedBills['${v[1]}:${v[0]}'] =
+                resolvedBills['${v[1]}:${v[0]}'] -
+                    resolvedBills['${v[0]}:${v[1]}'];
+            resolvedBills.remove('${v[0]}:${v[1]}');
+          } else if (resolvedBills['${v[1]}:${v[0]}'] ==
+              resolvedBills['${v[0]}:${v[1]}']) {
+            resolvedBills.remove('${v[0]}:${v[1]}');
+            resolvedBills.remove('${v[1]}:${v[0]}');
+          } else {
+            resolvedBills['${v[0]}:${v[1]}'] =
+                resolvedBills['${v[0]}:${v[1]}'] -
+                    resolvedBills['${v[1]}:${v[0]}'];
+            resolvedBills.remove('${v[1]}:${v[0]}');
+          }
+        }
       }
       List bills = roomData["bills"];
       for (var bill in bills) {

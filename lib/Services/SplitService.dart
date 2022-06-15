@@ -4,6 +4,7 @@ class SplitService {
   List<dynamic> bills;
   List<dynamic> users;
   SplitService({required this.bills, required this.users});
+
   List<dynamic> getActiveBills() {
     return bills.where((element) => element["active"] == true).toList();
   }

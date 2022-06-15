@@ -44,6 +44,8 @@ class AuthRepository {
 
   Future<void> signOut() async {
     try {
+      preferenceService.saveAvatarIndex(null);
+      preferenceService.saveAvatarName(null);
       await _firebaseAuth.signOut();
       preferenceService.saveAuthStatus(false);
     } catch (e) {
@@ -77,7 +79,6 @@ class AuthRepository {
       return null;
       // throw Exception(e.toString());
     }
-    return null;
   }
 
   User? getUser() {
