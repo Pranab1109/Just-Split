@@ -27,8 +27,8 @@ class SignUpRequested extends AuthEvent {
 // When the user signing in with google this event is called and the [AuthRepository] is called to sign in the user
 class GoogleSignUpRequested extends AuthEvent {
   final int avatar;
-
-  GoogleSignUpRequested(this.avatar);
+  String? userName;
+  GoogleSignUpRequested(this.avatar, this.userName);
 }
 
 // When the user signing out this event is called and the [AuthRepository] is called to sign out the user

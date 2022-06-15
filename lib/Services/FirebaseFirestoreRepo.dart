@@ -1,12 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:just_split/Services/AuthRepo.dart';
+import 'package:just_split/Services/PreferenceService.dart';
 import 'package:just_split/utils/RandomCodeGenerator.dart';
 
 class FirebaseFirestoreRepo {
   final FirebaseFirestore firestore = FirebaseFirestore.instance;
+  final PreferenceService preferenceService = PreferenceService();
   late CollectionReference users;
   late CollectionReference rooms;
+
   FirebaseFirestoreRepo() {
     users = FirebaseFirestore.instance.collection('USERS');
     rooms = FirebaseFirestore.instance.collection('ROOMS');
@@ -30,7 +33,14 @@ class FirebaseFirestoreRepo {
   Future<void> addUser(String username, int avatar, User user) async {
     // Call the user's CollectionReference to add a new user
     bool userExists = await checkUserDataExist(user.uid);
-    if (userExists) return;
+    if (userExists) {
+      var udet =
+          await users.doc(user.uid).collection("userDetails").limit(1).get();
+      var userdet = udet.docs[0].data();
+      preferenceService.saveAvatarName(userdet["username"]);
+      preferenceService.saveAvatarIndex(userdet["avatar"]);
+      return;
+    }
     DocumentSnapshot userDocMap = await rooms.doc("userMap").get();
     Map<String, dynamic> userMapTemp =
         userDocMap.data()! as Map<String, dynamic>;
@@ -38,10 +48,44 @@ class FirebaseFirestoreRepo {
     users.doc(user.uid).collection("userDetails").add({
       'username': username,
       'avatar': avatar, // 42
-    }).then((value) {
+    }).then((value) async {
       print("User Added");
       userMap.add(user.uid);
       rooms.doc("userMap").update({"userList": userMap});
+      await preferenceService.saveAvatarName(username);
+      await preferenceService.saveAvatarIndex(avatar);
+    }).catchError((error) => print("Failed to add user: $error"));
+  }
+
+  Future<void> changeUserName(String username, User user) async {
+    // Call the user's CollectionReference to add a new user
+    DocumentSnapshot userDocMap = await rooms.doc("userMap").get();
+    Map<String, dynamic> userMapTemp =
+        userDocMap.data()! as Map<String, dynamic>;
+    List userMap = userMapTemp["userList"];
+    var udet =
+        await users.doc(user.uid).collection("userDetails").limit(1).get();
+    var docid = udet.docs[0].id;
+    await users.doc(user.uid).collection("userDetails").doc(docid).set({
+      "username": username,
+    }, SetOptions(merge: true)).then((value) async {
+      await preferenceService.saveAvatarName(username);
+    }).catchError((error) => print("Failed to add user: $error"));
+  }
+
+  Future<void> changeAvatar(int index, User user) async {
+    // Call the user's CollectionReference to add a new user
+    DocumentSnapshot userDocMap = await rooms.doc("userMap").get();
+    Map<String, dynamic> userMapTemp =
+        userDocMap.data()! as Map<String, dynamic>;
+    List userMap = userMapTemp["userList"];
+    var udet =
+        await users.doc(user.uid).collection("userDetails").limit(1).get();
+    var docid = udet.docs[0].id;
+    await users.doc(user.uid).collection("userDetails").doc(docid).set({
+      "avatar": index,
+    }, SetOptions(merge: true)).then((value) async {
+      await preferenceService.saveAvatarIndex(index);
     }).catchError((error) => print("Failed to add user: $error"));
   }
 
@@ -53,13 +97,14 @@ class FirebaseFirestoreRepo {
     while (roomMap.containsKey(roomID)) {
       roomID = generateRandomString(6);
     }
+    var userName = await preferenceService.getAvatarName();
     var roomUID = await rooms.add({
       "roomID": roomID,
       "roomName": roomName,
       "users": [user.uid],
       "totalSpent": 0,
       "bills": [],
-      "userMap": {user.uid: user.displayName},
+      "userMap": {user.uid: userName},
     });
     rooms.doc("map").update({roomID: roomUID.id});
     await users
@@ -118,8 +163,9 @@ class FirebaseFirestoreRepo {
           "message": "Room already exists.",
         };
       }
+      var userName = await preferenceService.getAvatarName();
       usersList.add(uid);
-      userMap[uid] = user.displayName;
+      userMap[uid] = userName;
       final updatedRoom = rooms.doc(roomDocID);
       roomData["users"] = usersList;
       roomData["userMap"] = userMap;
@@ -152,17 +198,18 @@ class FirebaseFirestoreRepo {
         "username": temp.docs[0]["username"]
       };
     } catch (e) {
-      return 1;
+      return 0;
     }
   }
 
-  Future<void> addBill({roomDocID, amount, desc, userName}) async {
+  Future<void> addBill({roomDocID, amount, desc}) async {
     try {
       DocumentSnapshot temp = await rooms.doc(roomDocID).get();
       Map<String, dynamic> roomData = temp.data()! as Map<String, dynamic>;
       List bills = roomData["bills"];
       User user = authRepository.getUser()!;
       var uid = user.uid;
+      var userName = await preferenceService.getAvatarName();
       bills.add({
         "userName": userName,
         "amount": amount,
@@ -198,18 +245,14 @@ class FirebaseFirestoreRepo {
     try {
       DocumentSnapshot temp = await rooms.doc(roomDocID).get();
       Map<String, dynamic> roomData = temp.data()! as Map<String, dynamic>;
-      var resolvedBills = roomData["resolvedBills"] ?? [];
+      var resolvedBills = roomData["resolvedBills"] ?? {};
       for (var v in resolved) {
-        resolvedBills.add({"from": v[1], "to": v[0], "amount": v[2]});
+        resolvedBills['${v[1]}:${v[0]}'] = v[2];
       }
       List bills = roomData["bills"];
       for (var bill in bills) {
         bill["active"] = false;
       }
-      // print("RESOLVED BILLS : ");
-      // print(resolvedBills);
-      // print("BILLS : ");
-      // print(bills);
       await rooms.doc(roomDocID).set({
         "resolvedBills": resolvedBills,
         "bills": bills,

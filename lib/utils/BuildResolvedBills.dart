@@ -40,14 +40,22 @@ class BuildResolvedList extends StatelessWidget {
                     )));
                   } else {
                     Map userMap = data["userMap"];
-                    var resolvedBills = data["resolvedBills"];
+                    var resolvedBillsMap = data["resolvedBills"];
 
-                    if (resolvedBills.isEmpty) {
+                    if (resolvedBillsMap.isEmpty) {
                       return const Center(
                         child: Text("No bills resolved."),
                       );
                     }
-                    // return const Text("HELLO");
+                    String from;
+                    String to;
+                    //74lah36Sy8YP9RLy3lSkiIhNlwS2
+                    List resolvedBills = [];
+                    resolvedBillsMap.forEach((k, v) {
+                      from = k.toString().split(":")[0];
+                      to = k.toString().split(":")[1];
+                      resolvedBills.add({"from": from, "to": to, "amount": v});
+                    });
                     return SizedBox(
                       height: size.height / 2.05,
                       child: ListView.builder(
@@ -75,7 +83,7 @@ class BuildResolvedList extends StatelessWidget {
                                             ),
                                           ),
                                           Text(
-                                            "TO",
+                                            "to",
                                             style: TextStyle(
                                               color: cooloors.darkTextColor,
                                             ),

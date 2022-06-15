@@ -25,7 +25,7 @@ class LoginPage extends StatelessWidget {
 //
   void _authenticateWithGoogle(context) {
     BlocProvider.of<AuthBloc>(context).add(
-      GoogleSignUpRequested(0),
+      GoogleSignUpRequested(0, null),
     );
   }
 
@@ -36,7 +36,8 @@ class LoginPage extends StatelessWidget {
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is Authenticated) {
-            print(state.user);
+            // print(state.user);
+
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
@@ -160,8 +161,8 @@ class LoginPage extends StatelessWidget {
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) => BlocProvider(
-                                          create: (context) =>
-                                              AvatarBloc(AvatarRepo()),
+                                          create: (context) => AvatarBloc(
+                                              context.read<AvatarRepo>()),
                                           child: SignUpPage(),
                                         )),
                               );

@@ -1,16 +1,18 @@
 part of 'avatarbloc_bloc.dart';
 
 abstract class AvatarState extends Equatable {
-  const AvatarState({required this.selected});
-  final int selected;
   @override
-  List<Object> get props => [selected];
+  List<Object> get props => [];
 }
 
 class AvatarblocInitial extends AvatarState {
-  const AvatarblocInitial({required int state}) : super(selected: state);
+  AvatarblocInitial({required int state}) : super();
 }
 
+class AvatarblocLoading extends AvatarState {}
+
 class AvatarblocChanged extends AvatarState {
-  const AvatarblocChanged({required int state}) : super(selected: state);
+  final int ind;
+  final String name;
+  AvatarblocChanged({required this.ind, required this.name}) : super();
 }

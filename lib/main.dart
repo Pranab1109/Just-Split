@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:just_split/Services/AuthRepo.dart';
+import 'package:just_split/Services/AvatarRepo.dart';
 import 'package:just_split/Services/FirebaseFirestoreRepo.dart';
 import 'package:just_split/Services/PreferenceService.dart';
+import 'package:just_split/bloc/Avatar/avatarbloc_bloc.dart';
 import 'package:just_split/screens/LandingPage.dart';
 import 'package:just_split/screens/LoginPage.dart';
 import 'package:just_split/utils/Cooloors.dart';
@@ -47,13 +49,23 @@ class MyApp extends StatelessWidget {
             create: (context) => AuthRepository()),
         RepositoryProvider<FirebaseFirestoreRepo>(
             create: (context) => FirebaseFirestoreRepo()),
+        RepositoryProvider<AvatarRepo>(create: (context) => AvatarRepo()),
       ],
-      child: BlocProvider(
-        create: (context) => AuthBloc(
-          authRepository: RepositoryProvider.of<AuthRepository>(context),
-          firebaseFirestoreRepo:
-              RepositoryProvider.of<FirebaseFirestoreRepo>(context),
-        ),
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider<AuthBloc>(
+            create: (BuildContext context) => AuthBloc(
+              authRepository: RepositoryProvider.of<AuthRepository>(context),
+              firebaseFirestoreRepo:
+                  RepositoryProvider.of<FirebaseFirestoreRepo>(context),
+            ),
+          ),
+          BlocProvider<AvatarBloc>(
+            create: (BuildContext context) => AvatarBloc(
+              RepositoryProvider.of<AvatarRepo>(context),
+            ),
+          )
+        ],
         child: FutureBuilder(
           initialData: false,
           future: PreferenceService().getAuthStatus(),
@@ -62,7 +74,7 @@ class MyApp extends StatelessWidget {
               return MaterialApp(
                 theme: themeData,
                 home: LandingPage(
-                  user: AuthRepository().getUser()!,
+                  user: context.read<AuthRepository>().getUser()!,
                 ),
               );
             }

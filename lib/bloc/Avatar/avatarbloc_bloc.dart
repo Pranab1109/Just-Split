@@ -7,10 +7,18 @@ part 'avatarbloc_state.dart';
 
 class AvatarBloc extends Bloc<AvatarblocEvent, AvatarState> {
   final AvatarRepo avatarRepo;
-  AvatarBloc(this.avatarRepo) : super(const AvatarblocInitial(state: 0)) {
-    on<AvatarChangeRequest>((event, emit) {
+  AvatarBloc(this.avatarRepo) : super(AvatarblocInitial(state: 0)) {
+    on<AvatarIndexChangeRequest>((event, emit) {
+      emit(AvatarblocLoading());
       avatarRepo.selectIndex(event.index);
-      emit(AvatarblocChanged(state: avatarRepo.selectedAvatar));
+      emit(AvatarblocChanged(
+          ind: avatarRepo.selectedAvatar, name: avatarRepo.userName));
+    });
+    on<AvatarNameChangeRequest>((event, emit) {
+      emit(AvatarblocLoading());
+      avatarRepo.selectUserName(event.name);
+      emit(AvatarblocChanged(
+          ind: avatarRepo.selectedAvatar, name: avatarRepo.userName));
     });
   }
 }

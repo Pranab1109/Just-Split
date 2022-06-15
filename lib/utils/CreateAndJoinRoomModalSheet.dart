@@ -9,7 +9,8 @@ Widget createAndJoinRoomModalSheet(
     roomEditingController,
     joinEditingController,
     addRoom,
-    joinRoom) {
+    joinRoom,
+    isJoin) {
   return Column(
     mainAxisSize: MainAxisSize.min,
     children: [
@@ -23,113 +24,114 @@ Widget createAndJoinRoomModalSheet(
         )),
         child: Column(
           children: [
-            Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 20.0),
-                    child: Text(
-                      "Create new room",
-                      style: TextStyle(
-                          // color: Colors.white,
-                          color: cooloors.darkTextColor,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: MyTextFieldTwo(
-                      hintText: "Room name",
-                      inputController: roomEditingController,
-                      // formkey: _formKey,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      bottom: 20.0,
-                      left: 8.0,
-                      right: 8.0,
-                    ),
-                    child: ElevatedButton(
-                        onPressed: () {
-                          //todo : add room
-                          addRoom(context);
-                        },
-                        child: SizedBox(
-                          height: 50.0,
-                          width: MediaQuery.of(context).size.width * 0.9,
-                          child: const Center(
-                            child: Text(
-                              "Create Room",
-                              style: TextStyle(
-                                  // color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18.0),
-                            ),
+            !isJoin
+                ? Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(top: 20.0),
+                          child: Text(
+                            "Create new room",
+                            style: TextStyle(
+                                // color: Colors.white,
+                                color: cooloors.darkTextColor,
+                                fontWeight: FontWeight.bold),
                           ),
-                        )),
-                  ),
-                ],
-              ),
-            ),
-            Form(
-              key: _formKeyTwo,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Divider(
-                    height: 5.0,
-                    // color: Colors.white,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 20.0),
-                    child: Text(
-                      "Join room",
-                      style: TextStyle(
-                          // color: Colors.white,
-                          color: cooloors.darkTextColor,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: MyTextFieldTwo(
-                      hintText: "Room Code",
-                      inputController: joinEditingController,
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.only(
-                      bottom: MediaQuery.of(context).viewInsets.bottom,
-                      left: 8.0,
-                      right: 8.0,
-                    ),
-                    child: ElevatedButton(
-                        onPressed: () async {
-                          joinRoom(context);
-                        },
-                        child: SizedBox(
-                          height: 50.0,
-                          width: MediaQuery.of(context).size.width * 0.9,
-                          child: const Center(
-                            child: Text(
-                              "Join Room",
-                              style: TextStyle(
-                                  // color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18.0),
-                            ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: MyTextFieldTwo(
+                            hintText: "Room name",
+                            inputController: roomEditingController,
+                            // formkey: _formKey,
                           ),
-                        )),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(
+                            bottom: MediaQuery.of(context).viewInsets.bottom,
+                            left: 8.0,
+                            right: 8.0,
+                          ),
+                          child: ElevatedButton(
+                              onPressed: () {
+                                //todo : add room
+                                addRoom(context);
+                              },
+                              child: SizedBox(
+                                height: 50.0,
+                                width: MediaQuery.of(context).size.width * 0.9,
+                                child: const Center(
+                                  child: Text(
+                                    "Create Room",
+                                    style: TextStyle(
+                                        // color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18.0),
+                                  ),
+                                ),
+                              )),
+                        ),
+                      ],
+                    ),
+                  )
+                : Form(
+                    key: _formKeyTwo,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Divider(
+                          height: 5.0,
+                          // color: Colors.white,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 20.0),
+                          child: Text(
+                            "Join room",
+                            style: TextStyle(
+                                // color: Colors.white,
+                                color: cooloors.darkTextColor,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: MyTextFieldTwo(
+                            hintText: "Room Code",
+                            inputController: joinEditingController,
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(
+                            bottom: MediaQuery.of(context).viewInsets.bottom,
+                            left: 8.0,
+                            right: 8.0,
+                          ),
+                          child: ElevatedButton(
+                              onPressed: () async {
+                                joinRoom(context);
+                              },
+                              child: SizedBox(
+                                height: 50.0,
+                                width: MediaQuery.of(context).size.width * 0.9,
+                                child: const Center(
+                                  child: Text(
+                                    "Join Room",
+                                    style: TextStyle(
+                                        // color: Colors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18.0),
+                                  ),
+                                ),
+                              )),
+                        ),
+                        const SizedBox(
+                          height: 10.0,
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(
-                    height: 10.0,
-                  ),
-                ],
-              ),
-            ),
           ],
         ),
       ),

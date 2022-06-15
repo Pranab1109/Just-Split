@@ -28,10 +28,21 @@ class MyTextFieldTwo extends StatelessWidget {
             textCapitalization: TextCapitalization.sentences,
             keyboardType: isNum ? TextInputType.number : TextInputType.text,
             validator: (value) {
-              if (value != null && value.isEmpty) {
-                return 'Enter a valid name';
+              if (isNum) {
+                var amount = num.parse(inputController.text);
+                if (amount < 0) {
+                  return 'Amount should be positive';
+                } else if (amount > 10000000) {
+                  return 'Amount limit (1 Cr) exceeded';
+                } else {
+                  return null;
+                }
               } else {
-                return null;
+                if (value != null && value.isEmpty) {
+                  return 'Enter a valid name';
+                } else {
+                  return null;
+                }
               }
             },
             // keyboardType: TextInputType.emailAddress,

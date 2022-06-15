@@ -7,7 +7,11 @@ abstract class AvatarblocEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class AvatarChangeRequest extends AvatarblocEvent {
+class AvatarIndexChangeRequest extends AvatarblocEvent {
   final int index;
-  const AvatarChangeRequest(this.index);
+  const AvatarIndexChangeRequest(this.index);
+}
+class AvatarNameChangeRequest extends AvatarblocEvent {
+  final String name;
+  const AvatarNameChangeRequest ({required this.name});
 }

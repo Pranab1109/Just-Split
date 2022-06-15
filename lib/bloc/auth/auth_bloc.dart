@@ -50,8 +50,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       try {
         User? user = await authRepository.signUpWithGoogle();
         if (user != null) {
-          await firebaseFirestoreRepo.addUser(
-              user.displayName!, event.avatar, user);
+          var userName = event.userName ?? user.displayName ?? "User";
+          await firebaseFirestoreRepo.addUser(userName, event.avatar, user);
+
           emit(Authenticated(user: user));
         } else {
           emit(AuthError("Something went wrong."));

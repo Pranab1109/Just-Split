@@ -23,12 +23,13 @@ class SignUpPage extends StatelessWidget {
   }
 
 //
-  void _authenticateWithGoogle(context, int avatar) {
+  void _authenticateWithGoogle(context, int avatar, String userName) {
     BlocProvider.of<AuthBloc>(context).add(
-      GoogleSignUpRequested(avatar),
+      GoogleSignUpRequested(avatar, _nameController.text),
     );
   }
 
+  var selectedIndex = 0;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -60,8 +61,9 @@ class SignUpPage extends StatelessWidget {
                         itemBuilder: (BuildContext ctx, index) {
                           return GestureDetector(
                             onTap: () {
+                              selectedIndex = index;
                               BlocProvider.of<AvatarBloc>(context)
-                                  .add(AvatarChangeRequest(index));
+                                  .add(AvatarIndexChangeRequest(index));
                             },
                             child: Container(
                               padding: const EdgeInsets.all(5.0),
@@ -73,7 +75,7 @@ class SignUpPage extends StatelessWidget {
                                   shape: BoxShape.circle,
                                   border: Border.all(
                                       width: 2,
-                                      color: state.selected == index
+                                      color: selectedIndex == index
                                           ? Colors.white
                                           : Colors.transparent)),
                               child: Container(
@@ -95,7 +97,9 @@ class SignUpPage extends StatelessWidget {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => LandingPage(user: state.user)),
+                          builder: (context) => LandingPage(
+                                user: state.user,
+                              )),
                     );
                   } else if (state is AuthError) {
                     // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -126,11 +130,15 @@ class SignUpPage extends StatelessWidget {
                                 Padding(
                                   padding:
                                       const EdgeInsets.symmetric(vertical: 2.0),
-                                  child: MyTextField(
-                                    inputController: _nameController,
-                                    hintText: "Name",
-                                    formkey: _formKeySignIn,
-                                    isName: true,
+                                  child: BlocBuilder<AvatarBloc, AvatarState>(
+                                    builder: (context, state) {
+                                      return MyTextField(
+                                        inputController: _nameController,
+                                        hintText: "Name",
+                                        formkey: _formKeySignIn,
+                                        isName: true,
+                                      );
+                                    },
                                   ),
                                 ),
                                 Padding(
@@ -194,7 +202,10 @@ class SignUpPage extends StatelessWidget {
                                           context,
                                           BlocProvider.of<AvatarBloc>(context)
                                               .avatarRepo
-                                              .selectedAvatar);
+                                              .selectedAvatar,
+                                          BlocProvider.of<AvatarBloc>(context)
+                                              .avatarRepo
+                                              .userName);
                                     },
                                     child: SizedBox(
                                       height: 50.0,

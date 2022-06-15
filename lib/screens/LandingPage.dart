@@ -12,8 +12,12 @@ import 'package:just_split/utils/RoomTile.dart';
 import '../utils/OnWillPop.dart';
 
 class LandingPage extends StatelessWidget {
-  LandingPage({Key? key, required this.user}) : super(key: key);
+  LandingPage({
+    Key? key,
+    required this.user,
+  }) : super(key: key);
   final User user;
+
   final TextEditingController roomEditingController = TextEditingController();
   final TextEditingController joinEditingController = TextEditingController();
   final Cooloors cooloors = Cooloors();
@@ -91,12 +95,12 @@ class LandingPage extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(
-              children: [
+              children: const [
                 Align(
                   alignment: Alignment.topLeft,
                   child: Text(
-                    "Hello, ${user.displayName}",
-                    style: const TextStyle(
+                    "Hello :)",
+                    style: TextStyle(
                         color: Colors.white,
                         fontSize: 18,
                         fontWeight: FontWeight.bold),
@@ -144,7 +148,8 @@ class LandingPage extends StatelessWidget {
                             document.data()! as Map<String, dynamic>;
                         // print(data["time"]);
                         return Padding(
-                          padding: const EdgeInsets.all(8.0),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0, vertical: 8),
                           child: InkWell(
                               borderRadius:
                                   const BorderRadius.all(Radius.circular(5.0)),
@@ -165,33 +170,75 @@ class LandingPage extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.only(bottom: 8.0),
-            child: ElevatedButton(
-              onPressed: () {
-                showModalBottomSheet(
-                    isScrollControlled: true,
-                    // expand: true,
-                    backgroundColor: cooloors.darkBackgroundColor,
-                    shape: const RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.vertical(top: Radius.circular(25.0))),
-                    context: (context),
-                    builder: (context) => createAndJoinRoomModalSheet(
-                        context,
-                        cooloors,
-                        _formKey,
-                        _formKeyTwo,
-                        roomEditingController,
-                        joinEditingController,
-                        addRoom,
-                        joinRoom));
-              },
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                width: MediaQuery.of(context).size.width * 0.87,
-                height: 50,
-                child: const Icon(Icons.add),
-              ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    showModalBottomSheet(
+                        isScrollControlled: true,
+                        // expand: true,
+                        backgroundColor: cooloors.darkBackgroundColor,
+                        shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(25.0))),
+                        context: (context),
+                        builder: (context) => createAndJoinRoomModalSheet(
+                            context,
+                            cooloors,
+                            _formKey,
+                            _formKeyTwo,
+                            roomEditingController,
+                            joinEditingController,
+                            addRoom,
+                            joinRoom,
+                            true));
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    width: MediaQuery.of(context).size.width * 0.35,
+                    height: 50,
+                    child: const Center(
+                        child: Text(
+                      "Join Room",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    )),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    showModalBottomSheet(
+                        isScrollControlled: true,
+                        // expand: true,
+                        backgroundColor: cooloors.darkBackgroundColor,
+                        shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(25.0))),
+                        context: (context),
+                        builder: (context) => createAndJoinRoomModalSheet(
+                            context,
+                            cooloors,
+                            _formKey,
+                            _formKeyTwo,
+                            roomEditingController,
+                            joinEditingController,
+                            addRoom,
+                            joinRoom,
+                            false));
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    width: MediaQuery.of(context).size.width * 0.35,
+                    height: 50,
+                    child: const Center(
+                        child: Text(
+                      "Create Room",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    )),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

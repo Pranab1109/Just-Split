@@ -1,5 +1,7 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:just_split/bloc/Avatar/avatarbloc_bloc.dart';
 
 class MyTextField extends StatelessWidget {
   final TextEditingController inputController;
@@ -30,58 +32,66 @@ class MyTextField extends StatelessWidget {
       children: [
         SizedBox(
           height: 70,
-          child: TextFormField(
-            obscureText: isPassword,
-            controller: inputController,
-            onChanged: (value) {
-              //Do something
+          child: BlocBuilder<AvatarBloc, AvatarState>(
+            builder: (context, state) {
+              return TextFormField(
+                obscureText: isPassword,
+                controller: inputController,
+                onChanged: (value) {
+                  //Do something
+                  if (isName) {
+                    BlocProvider.of<AvatarBloc>(context).add(
+                        AvatarNameChangeRequest(name: inputController.text));
+                  }
+                },
+                keyboardType: TextInputType.emailAddress,
+                style: const TextStyle(fontSize: 14, color: Colors.white),
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                validator: (value) {
+                  if (isEmail) {
+                    return value != null && !EmailValidator.validate(value)
+                        ? 'Enter a valid email'
+                        : null;
+                  } else if (isPassword) {
+                    return value != null && value.length < 6
+                        ? "Enter min. 6 characters"
+                        : null;
+                  } else if (isName) {
+                    return value != null && value.length < 3
+                        ? "Enter min. 3 characters"
+                        : null;
+                  }
+                  return null;
+                },
+                decoration: InputDecoration(
+                  label: Text(hintText),
+                  labelStyle: const TextStyle(color: primaryColor),
+                  // prefixIcon: Icon(Icons.email),
+                  filled: true,
+                  fillColor: accentColor,
+                  hintText: hintText,
+                  hintStyle: TextStyle(color: Colors.grey.withOpacity(.75)),
+                  contentPadding: const EdgeInsets.symmetric(
+                      vertical: 0.0, horizontal: 20.0),
+                  border: const OutlineInputBorder(
+                    borderSide: BorderSide(color: primaryColor, width: 1.0),
+                    borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                  ),
+                  focusedBorder: const OutlineInputBorder(
+                    borderSide: BorderSide(color: primaryColor, width: 1.0),
+                    borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                  ),
+                  errorBorder: const OutlineInputBorder(
+                    borderSide: BorderSide(color: errorColor, width: 1.0),
+                    borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                  ),
+                  enabledBorder: const OutlineInputBorder(
+                    borderSide: BorderSide(color: primaryColor, width: 1.0),
+                    borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                  ),
+                ),
+              );
             },
-            keyboardType: TextInputType.emailAddress,
-            style: const TextStyle(fontSize: 14, color: Colors.white),
-            autovalidateMode: AutovalidateMode.onUserInteraction,
-            validator: (value) {
-              if (isEmail) {
-                return value != null && !EmailValidator.validate(value)
-                    ? 'Enter a valid email'
-                    : null;
-              } else if (isPassword) {
-                return value != null && value.length < 6
-                    ? "Enter min. 6 characters"
-                    : null;
-              } else if (isName) {
-                return value != null && value.length < 3
-                    ? "Enter min. 3 characters"
-                    : null;
-              }
-              return null;
-            },
-            decoration: InputDecoration(
-              label: Text(hintText),
-              labelStyle: const TextStyle(color: primaryColor),
-              // prefixIcon: Icon(Icons.email),
-              filled: true,
-              fillColor: accentColor,
-              hintText: hintText,
-              hintStyle: TextStyle(color: Colors.grey.withOpacity(.75)),
-              contentPadding:
-                  const EdgeInsets.symmetric(vertical: 0.0, horizontal: 20.0),
-              border: const OutlineInputBorder(
-                borderSide: BorderSide(color: primaryColor, width: 1.0),
-                borderRadius: BorderRadius.all(Radius.circular(5.0)),
-              ),
-              focusedBorder: const OutlineInputBorder(
-                borderSide: BorderSide(color: primaryColor, width: 1.0),
-                borderRadius: BorderRadius.all(Radius.circular(5.0)),
-              ),
-              errorBorder: const OutlineInputBorder(
-                borderSide: BorderSide(color: errorColor, width: 1.0),
-                borderRadius: BorderRadius.all(Radius.circular(10.0)),
-              ),
-              enabledBorder: const OutlineInputBorder(
-                borderSide: BorderSide(color: primaryColor, width: 1.0),
-                borderRadius: BorderRadius.all(Radius.circular(10.0)),
-              ),
-            ),
           ),
         ),
       ],

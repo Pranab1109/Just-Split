@@ -4,6 +4,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:just_split/Services/AuthRepo.dart';
+import 'package:just_split/Services/AvatarRepo.dart';
 import 'package:just_split/Services/FirebaseFirestoreRepo.dart';
 import 'package:just_split/Services/SplitService.dart';
 import 'package:just_split/utils/BuildResolvedBills.dart';
@@ -19,12 +20,12 @@ class RoomDetailScreen extends StatelessWidget {
   final String roomID;
   final String roomName;
   final String roomCode;
-  RoomDetailScreen(
-      {Key? key,
-      required this.roomID,
-      required this.roomName,
-      required this.roomCode})
-      : super(key: key);
+  RoomDetailScreen({
+    Key? key,
+    required this.roomID,
+    required this.roomName,
+    required this.roomCode,
+  }) : super(key: key);
   final Cooloors cooloors = Cooloors();
 
   final _formKey = GlobalKey<FormState>();
@@ -55,13 +56,13 @@ class RoomDetailScreen extends StatelessWidget {
 
   final user = AuthRepository().getUser();
 
-  void addBill(context) async {
+  void addBill(context, name) async {
     if (_formKey.currentState!.validate()) {
       RepositoryProvider.of<FirebaseFirestoreRepo>(context).addBill(
-          amount: num.parse(amountEditingController.text),
-          desc: descEditingController.text,
-          roomDocID: roomID,
-          userName: user?.displayName);
+        amount: num.parse(amountEditingController.text),
+        desc: descEditingController.text,
+        roomDocID: roomID,
+      );
       descEditingController.text = "";
       amountEditingController.text = "";
       Navigator.pop(context);
@@ -304,6 +305,9 @@ class RoomDetailScreen extends StatelessWidget {
                                                                   amountEditingController,
                                                             ),
                                                           ),
+                                                          const SizedBox(
+                                                            height: 16,
+                                                          ),
                                                           Padding(
                                                             padding:
                                                                 const EdgeInsets
@@ -333,7 +337,10 @@ class RoomDetailScreen extends StatelessWidget {
                                                                     onPressed:
                                                                         () async {
                                                                       addBill(
-                                                                          context);
+                                                                          context,
+                                                                          context
+                                                                              .read<AvatarRepo>()
+                                                                              .userName);
                                                                     },
                                                                     child:
                                                                         SizedBox(
