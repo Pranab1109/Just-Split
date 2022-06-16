@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class MyTextFieldTwo extends StatelessWidget {
   final TextEditingController inputController;
   final String hintText;
+  String errorText;
   bool isNum;
   MyTextFieldTwo(
       {Key? key,
       required this.inputController,
       required this.hintText,
+      required this.errorText,
       this.isNum = false})
       : super(key: key);
 
@@ -30,7 +32,7 @@ class MyTextFieldTwo extends StatelessWidget {
             validator: (value) {
               if (isNum) {
                 var amount = num.parse(inputController.text);
-                if (amount < 0) {
+                if (amount <= 0) {
                   return 'Amount should be positive';
                 } else if (amount > 10000000) {
                   return 'Amount limit (1 Cr) exceeded';
@@ -39,7 +41,7 @@ class MyTextFieldTwo extends StatelessWidget {
                 }
               } else {
                 if (value != null && value.isEmpty) {
-                  return 'Enter a valid name';
+                  return errorText;
                 } else {
                   return null;
                 }

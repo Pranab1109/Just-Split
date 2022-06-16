@@ -49,8 +49,10 @@ Widget roomTile(BuildContext context, Map<String, dynamic> data,
         IconButton(
             onPressed: () {
               var roomUID = data["roomUID"];
+              var roomID = data["roomID"];
+              print(roomID);
               var userRoomID = document.id;
-              deleteRoom(context, roomUID, userRoomID);
+              deleteRoom(context, roomUID, userRoomID, roomID);
             },
             icon: Icon(
               Icons.delete_outline_rounded,

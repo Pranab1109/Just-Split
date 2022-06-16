@@ -23,6 +23,7 @@ class LandingPage extends StatelessWidget {
   final Cooloors cooloors = Cooloors();
   final _formKey = GlobalKey<FormState>();
   final _formKeyTwo = GlobalKey<FormState>();
+
   void _signOut(context) async {
     bool signout = await onWillPop(context);
     if (signout) {
@@ -74,9 +75,9 @@ class LandingPage extends StatelessWidget {
     }
   }
 
-  void deleteRoom(context, roomUID, userRoomID) {
+  void deleteRoom(context, roomUID, userRoomID, roomID) {
     RepositoryProvider.of<FirebaseFirestoreRepo>(context)
-        .deleteRoom(roomDocID: roomUID, userRoomID: userRoomID);
+        .deleteRoom(roomDocID: roomUID, userRoomID: userRoomID, roomID: roomID);
   }
 
   @override

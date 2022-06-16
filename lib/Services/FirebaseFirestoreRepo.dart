@@ -121,7 +121,8 @@ class FirebaseFirestoreRepo {
         .catchError((error) => print("Failed to add user: $error"));
   }
 
-  Future<void> deleteRoom({roomDocID, userRoomID}) async {
+  Future<void> deleteRoom(
+      {roomDocID, userRoomID, required String roomID}) async {
     AuthRepository authRepository = AuthRepository();
     var uid = authRepository.getUser()?.uid;
     print(uid);
@@ -135,6 +136,12 @@ class FirebaseFirestoreRepo {
     var userCount = usersList.length;
     await userDeletedRoom.delete().catchError((e) => print(e));
     if (userCount == 1) {
+      DocumentSnapshot roomMapTemp = await rooms.doc("map").get();
+      Map<String, dynamic> roomMap =
+          roomMapTemp.data()! as Map<String, dynamic>;
+      roomMap.remove(roomID);
+      final updatedMap = rooms.doc("map");
+      updatedMap.set(roomMap);
       await deletedRoom.delete().catchError((e) => print(e));
     } else {
       usersList.remove(uid);
@@ -275,10 +282,10 @@ class FirebaseFirestoreRepo {
       for (var bill in bills) {
         bill["active"] = false;
       }
-      await rooms.doc(roomDocID).set({
+      await rooms.doc(roomDocID).update({
         "resolvedBills": resolvedBills,
         "bills": bills,
-      }, SetOptions(merge: true));
+      });
     } catch (e) {}
   }
 }

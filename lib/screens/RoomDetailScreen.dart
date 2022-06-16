@@ -328,6 +328,7 @@ class RoomDetailScreen extends StatelessWidget {
                                                                   "Amount",
                                                               inputController:
                                                                   amountEditingController,
+                                                              errorText: "",
                                                             ),
                                                           ),
                                                           const SizedBox(
@@ -345,6 +346,8 @@ class RoomDetailScreen extends StatelessWidget {
                                                                   "Description",
                                                               inputController:
                                                                   descEditingController,
+                                                              errorText:
+                                                                  "Enter description.",
                                                             ),
                                                           ),
                                                           Padding(

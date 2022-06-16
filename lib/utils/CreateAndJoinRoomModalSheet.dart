@@ -45,6 +45,7 @@ Widget createAndJoinRoomModalSheet(
                           child: MyTextFieldTwo(
                             hintText: "Room name",
                             inputController: roomEditingController,
+                            errorText: "Enter a valid name",
                             // formkey: _formKey,
                           ),
                         ),
@@ -100,6 +101,7 @@ Widget createAndJoinRoomModalSheet(
                           child: MyTextFieldTwo(
                             hintText: "Room Code",
                             inputController: joinEditingController,
+                            errorText: "Enter a room code.",
                           ),
                         ),
                         Padding(
