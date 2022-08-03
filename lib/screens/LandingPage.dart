@@ -113,7 +113,13 @@ class LandingPage extends StatelessWidget {
         ),
       ),
       appBar: AppBar(
-        title: const Text("Just Split"),
+        title: const Text(
+          "Just Split",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+          // textAlign: TextAlign.center,
+        ),
         elevation: 0.0,
         actions: [
           IconButton(

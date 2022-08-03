@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     Cooloors cooloors = Cooloors();
     var themeData = ThemeData(
-      textTheme: GoogleFonts.libreBaskervilleTextTheme(
+      textTheme: GoogleFonts.nunitoSansTextTheme(
         Theme.of(context).textTheme,
       ),
       scaffoldBackgroundColor: cooloors.darkBackgroundColor,
