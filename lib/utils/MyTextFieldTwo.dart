@@ -31,9 +31,17 @@ class MyTextFieldTwo extends StatelessWidget {
             keyboardType: isNum ? TextInputType.number : TextInputType.text,
             validator: (value) {
               if (isNum) {
-                var amount = num.parse(inputController.text);
+                var amount;
+                try {
+                  var amount = num.parse(inputController.text);
+                  // etc.
+                } on FormatException {
+                  // etc.
+                  return "Invalid amount";
+                }
+                print(amount);
                 if (amount <= 0) {
-                  return 'Amount should be positive';
+                  return 'Invalid amount';
                 } else if (amount > 10000000) {
                   return 'Amount limit (1 Cr) exceeded';
                 } else {
