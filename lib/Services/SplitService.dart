@@ -1,5 +1,4 @@
 import 'package:just_split/Services/FirebaseFirestoreRepo.dart';
-
 import '../utils/onWillSplit.dart';
 
 class SplitService {
@@ -12,11 +11,17 @@ class SplitService {
   }
 
   Map<int, List<List<dynamic>>> billmap = <int, List<List<dynamic>>>{};
+  int minDepth = 1000000000;
+
   int recursion(List<List<dynamic>> positives, List<List<dynamic>> negatives,
       List<List<dynamic>> bills, int depth) {
+    if (depth >= minDepth) {
+      return 1000000000;
+    }
     if (positives.isEmpty && negatives.isEmpty) {
       List<List<dynamic>>? x = billmap[depth];
       if (x == null) {
+        minDepth = depth;
         x = List.from(bills);
         billmap[depth] = x;
       }
@@ -93,10 +98,8 @@ class SplitService {
       }
     }
     billmap.clear();
+    minDepth = 1000000000;
     List<List<dynamic>> bills = [];
-    // print(individualPay);
-    // print(getters);
-    // print(payers);
     if (payers.isEmpty || getters.isEmpty) {
       return;
     }
@@ -106,89 +109,8 @@ class SplitService {
       tr[0] = users[tr[0]];
       tr[1] = users[tr[1]];
       tr[2] = double.parse((tr[2]).toStringAsFixed(2));
-      // print(tr);
     }
     firestoreRepo.storeResolvedBill(roomDocID, ans);
     return ans;
   }
 }
-/* 
- List finalBill = [];
-  int recursion(List<List<dynamic>> positives, List<List<dynamic>> negatives) {
-    if (positives.isEmpty && negatives.isEmpty) {
-      return 0;
-    }
-    if(positives.isEmpty || negatives.isEmpty){
-      return 1000000000;
-    }
-    print("negatives");
-    for(var x in negatives){
-      print(x);
-    }
-    print("positives");
-    for(var y in positives){
-      print(y);
-    }
-//     print("final Bill");
-//     for(var x in finalBill){
-//       print(x);
-//     }
-    var negative = negatives.elementAt(0);
-    num n = negative[0];
-    var nuid = negative[1];
-    int count = 1000000000;
-    int idx = 0;
-    List ans = [-1, -1, -1];
-    num amount;
-    for (var positive in positives) {
-      List<List<dynamic>> newPositives = List.from(positives);
-      List<List<dynamic>> newNegatives = List.from(negatives);
-      num p = positive[0];
-      var puid = positive[1];
-      newNegatives.remove(negative);
-      newPositives.remove(positive);
-      amount = p + n ;
-      if (-n == p) {
-//         print('equality ${negative[1]} $n and ${positive[1]} $p');
-        
-      } else if (-n > p) {
-//         print('negative ${negative[1]} $n and ${positive[1]} $p');
-        newNegatives.add([amount,nuid]);
-//         if(newNegatives[0][0]>0){
-//           continue;
-//         }  
-      } else {
-//         print('positive ${negative[1]} $n and ${positive[1]} $p');
-        newPositives.add([amount,puid]);
-//         if(newPositives[idx][0]<0){
-//           continue;
-//         }
-      }
-      int nextCount = recursion(newPositives, newNegatives);
-      if (nextCount < count) {
-        ans = [positive[1], negative[1], amount];
-        count = nextCount;
-      }
-      idx = idx + 1;
-    }
-    if(ans[0]!=-1){
-      finalBill.add(ans);
-    }
-    return count + 1;
-  }
-
-void main() {
-  List<List<dynamic>> positives = [[400,0],[200,1],[150,3]];
-  List<List<dynamic>> negatives = [[-400,4],[-300,5],[-50,6]];
-  int x = recursion(positives,negatives);
-  print(" ");
-  print(" ");
-  print(x);
-  print(" ");
-  print(" ");
-  for(var x in finalBill){
-    print(x);
-  }
-}
-
-*/
