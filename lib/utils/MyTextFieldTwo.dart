@@ -39,16 +39,23 @@ class MyTextFieldTwo extends StatelessWidget {
                 return (value == null || value.isEmpty) ? errorText : null;
               }
             },
-            style: TextStyle(fontSize: 15, color: colorScheme.onSurface, fontWeight: FontWeight.bold),
+            style: TextStyle(
+                fontSize: 15,
+                color: colorScheme.onSurface,
+                fontWeight: FontWeight.bold),
             decoration: InputDecoration(
               label: Text(hintText),
-              labelStyle: TextStyle(color: colorScheme.onSurface.withOpacity(0.6), fontWeight: FontWeight.bold),
+              labelStyle: TextStyle(
+                  color: colorScheme.onSurface.withOpacity(0.6),
+                  fontWeight: FontWeight.bold),
               filled: true,
               fillColor: colorScheme.surface,
               hintText: hintText,
-              hintStyle: TextStyle(color: colorScheme.onSurface.withOpacity(0.3)),
+              hintStyle:
+                  TextStyle(color: colorScheme.onSurface.withOpacity(0.3)),
               suffixIcon: suffixIcon,
-              contentPadding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+              contentPadding:
+                  const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
               border: OutlineInputBorder(
                 borderSide: const BorderSide(color: Colors.black, width: 2.5),
                 borderRadius: BorderRadius.circular(12),

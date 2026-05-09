@@ -87,12 +87,14 @@ class SplitService {
       if (element["isSettlement"] == true) {
         // A settlement is a direct transfer from payer to a specific recipient
         individualPay[usersMap[payerUid]!] += amount;
-        
+
         // Find the recipient from splitAmong or splitDetails
         String? recipientUid;
-        if (element["splitAmong"] != null && (element["splitAmong"] as List).isNotEmpty) {
+        if (element["splitAmong"] != null &&
+            (element["splitAmong"] as List).isNotEmpty) {
           recipientUid = element["splitAmong"][0];
-        } else if (element["splitDetails"] != null && (element["splitDetails"] as Map).isNotEmpty) {
+        } else if (element["splitDetails"] != null &&
+            (element["splitDetails"] as Map).isNotEmpty) {
           recipientUid = (element["splitDetails"] as Map).keys.first;
         }
 
@@ -103,14 +105,17 @@ class SplitService {
         // Payer gets credited for what they paid
         individualPay[usersMap[payerUid]!] += amount;
 
-        if (element.containsKey("splitDetails") && element["splitDetails"] != null) {
-          Map<String, dynamic> splitDetails = Map<String, dynamic>.from(element["splitDetails"]);
+        if (element.containsKey("splitDetails") &&
+            element["splitDetails"] != null) {
+          Map<String, dynamic> splitDetails =
+              Map<String, dynamic>.from(element["splitDetails"]);
           splitDetails.forEach((uid, share) {
             if (usersMap.containsKey(uid)) {
               individualPay[usersMap[uid]!] -= share;
             }
           });
-        } else if (element.containsKey("splitAmong") && element["splitAmong"] != null) {
+        } else if (element.containsKey("splitAmong") &&
+            element["splitAmong"] != null) {
           List<dynamic> splitAmong = element["splitAmong"];
           if (splitAmong.isNotEmpty) {
             num share = amount / splitAmong.length;
@@ -136,7 +141,7 @@ class SplitService {
       // Round to 2 decimal places to fix floating point issues
       double roundedVal = double.parse(individualPay[j].toStringAsFixed(2));
       totalNet += roundedVal;
-      
+
       if (roundedVal < -0.01) {
         payers.add([roundedVal, j]);
       } else if (roundedVal > 0.01) {
@@ -146,7 +151,8 @@ class SplitService {
 
     // Edge case: if sums don't match due to rounding, adjust the largest getter/payer
     if (totalNet.abs() > 0.01 && getters.isNotEmpty) {
-       getters[0][0] = double.parse((getters[0][0] - totalNet).toStringAsFixed(2));
+      getters[0][0] =
+          double.parse((getters[0][0] - totalNet).toStringAsFixed(2));
     }
 
     billmap.clear();
@@ -178,10 +184,11 @@ class SplitService {
   }
 
   // Guaranteed fallback algorithm if the recursive optimizer fails
-  List<List<dynamic>> _greedySettlement(List<List<dynamic>> getters, List<List<dynamic>> payers) {
+  List<List<dynamic>> _greedySettlement(
+      List<List<dynamic>> getters, List<List<dynamic>> payers) {
     List<List<dynamic>> results = [];
     int g = 0, p = 0;
-    
+
     while (g < getters.length && p < payers.length) {
       double gAmt = getters[g][0];
       double pAmt = -payers[p][0];

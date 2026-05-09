@@ -19,7 +19,7 @@ class BuildResolvedList extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     Stream documentStream = firebaseFirestoreRepo.rooms.doc(roomID).snapshots();
-    
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(8.0, 0.0, 8.0, 8.0),
       child: Column(
@@ -41,18 +41,25 @@ class BuildResolvedList extends StatelessWidget {
                 builder: (context, snapshot) {
                   var data = snapshot.data;
                   if (data == null || !data.exists) {
-                    return Center(child: CircularProgressIndicator(color: colorScheme.primary));
+                    return Center(
+                        child: CircularProgressIndicator(
+                            color: colorScheme.primary));
                   } else {
-                    Map<String, dynamic> docData = data.data() as Map<String, dynamic>;
+                    Map<String, dynamic> docData =
+                        data.data() as Map<String, dynamic>;
                     Map userMap = docData["userMap"] ?? {};
                     var resolvedBillsMap = docData["liveSettlements"] ?? {};
 
                     if (resolvedBillsMap.isEmpty) {
                       return Center(
-                        child: Text("All settled! 🥳", style: TextStyle(color: colorScheme.onSurface.withOpacity(0.5), fontSize: 18, fontWeight: FontWeight.bold)),
+                        child: Text("All settled! 🥳",
+                            style: TextStyle(
+                                color: colorScheme.onSurface.withOpacity(0.5),
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold)),
                       );
                     }
-                    
+
                     List resolvedBills = [];
                     resolvedBillsMap.forEach((k, v) {
                       String from = k.toString().split(":")[0];
@@ -74,25 +81,42 @@ class BuildResolvedList extends StatelessWidget {
                         final isRecipient = uid == toUid;
 
                         return GestureDetector(
-                          onTap: (isPayer || isRecipient) 
-                            ? () => _showRoomSettleConfirmation(context, fromUid, toUid, fromName, toName, amount, roomID)
-                            : null,
+                          onTap: (isPayer || isRecipient)
+                              ? () => _showRoomSettleConfirmation(
+                                  context,
+                                  fromUid,
+                                  toUid,
+                                  fromName,
+                                  toName,
+                                  amount,
+                                  roomID)
+                              : null,
                           child: Container(
                             margin: const EdgeInsets.only(bottom: 16),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 16),
                             decoration: BoxDecoration(
                               color: colorScheme.surface,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(color: Colors.black, width: 3),
-                              boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(4, 4))],
+                              boxShadow: const [
+                                BoxShadow(
+                                    color: Colors.black, offset: Offset(4, 4))
+                              ],
                             ),
                             child: Row(
                               children: [
-                                _buildUserAvatar(context, fromName, isPayer ? const Color(0xFFEF4444) : colorScheme.primary),
+                                _buildUserAvatar(
+                                    context,
+                                    fromName,
+                                    isPayer
+                                        ? const Color(0xFFEF4444)
+                                        : colorScheme.primary),
                                 const SizedBox(width: 14),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
                                         children: [
@@ -100,26 +124,44 @@ class BuildResolvedList extends StatelessWidget {
                                             child: Text(
                                               fromName,
                                               overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(color: colorScheme.onSurface, fontWeight: FontWeight.w900, fontSize: 16),
+                                              style: TextStyle(
+                                                  color: colorScheme.onSurface,
+                                                  fontWeight: FontWeight.w900,
+                                                  fontSize: 16),
                                             ),
                                           ),
                                           const Padding(
-                                            padding: EdgeInsets.symmetric(horizontal: 8),
-                                            child: Icon(Icons.arrow_forward_rounded, color: Colors.black, size: 18),
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 8),
+                                            child: Icon(
+                                                Icons.arrow_forward_rounded,
+                                                color: Colors.black,
+                                                size: 18),
                                           ),
                                           Flexible(
                                             child: Text(
                                               toName,
                                               overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(color: colorScheme.onSurface, fontWeight: FontWeight.w900, fontSize: 16),
+                                              style: TextStyle(
+                                                  color: colorScheme.onSurface,
+                                                  fontWeight: FontWeight.w900,
+                                                  fontSize: 16),
                                             ),
                                           ),
                                         ],
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
-                                        isPayer ? "You are paying $toName" : isRecipient ? "$fromName is paying you" : "Settlement flow",
-                                        style: TextStyle(color: colorScheme.onSurface.withOpacity(0.6), fontSize: 12, fontWeight: FontWeight.bold),
+                                        isPayer
+                                            ? "You are paying $toName"
+                                            : isRecipient
+                                                ? "$fromName is paying you"
+                                                : "Settlement flow",
+                                        style: TextStyle(
+                                            color: colorScheme.onSurface
+                                                .withOpacity(0.6),
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold),
                                       ),
                                     ],
                                   ),
@@ -130,12 +172,21 @@ class BuildResolvedList extends StatelessWidget {
                                     Text(
                                       "₹${amount.toStringAsFixed(2)}",
                                       style: TextStyle(
-                                        color: isPayer ? const Color(0xFFEF4444) : isRecipient ? const Color(0xFF10B981) : colorScheme.onSurface,
-                                        fontWeight: FontWeight.w900, fontSize: 18,
+                                        color: isPayer
+                                            ? const Color(0xFFEF4444)
+                                            : isRecipient
+                                                ? const Color(0xFF10B981)
+                                                : colorScheme.onSurface,
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: 18,
                                       ),
                                     ),
                                     if (isPayer || isRecipient)
-                                      const Text("Tap to settle", style: TextStyle(color: Colors.black38, fontSize: 10, fontWeight: FontWeight.bold)),
+                                      const Text("Tap to settle",
+                                          style: TextStyle(
+                                              color: Colors.black38,
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold)),
                                   ],
                                 ),
                               ],
@@ -152,7 +203,14 @@ class BuildResolvedList extends StatelessWidget {
     );
   }
 
-  void _showRoomSettleConfirmation(BuildContext context, String fromUid, String toUid, String fromName, String toName, double amount, String roomID) {
+  void _showRoomSettleConfirmation(
+      BuildContext context,
+      String fromUid,
+      String toUid,
+      String fromName,
+      String toName,
+      double amount,
+      String roomID) {
     final colorScheme = Theme.of(context).colorScheme;
     showModalBottomSheet(
       context: context,
@@ -173,18 +231,25 @@ class BuildResolvedList extends StatelessWidget {
                 shape: BoxShape.circle,
                 border: Border.all(color: Colors.black, width: 3),
               ),
-              child: const Icon(Icons.handshake_rounded, color: Colors.black, size: 40),
+              child: const Icon(Icons.handshake_rounded,
+                  color: Colors.black, size: 40),
             ),
             const SizedBox(height: 24),
             Text(
               "Confirm Settlement",
-              style: TextStyle(color: colorScheme.onSurface, fontSize: 24, fontWeight: FontWeight.w900),
+              style: TextStyle(
+                  color: colorScheme.onSurface,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900),
             ),
             const SizedBox(height: 12),
             Text(
               "Record a payment of ₹${amount.toStringAsFixed(2)} from $fromName to $toName?",
               textAlign: TextAlign.center,
-              style: TextStyle(color: colorScheme.onSurface.withOpacity(0.7), fontSize: 16, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  color: colorScheme.onSurface.withOpacity(0.7),
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 40),
             Row(
@@ -192,7 +257,10 @@ class BuildResolvedList extends StatelessWidget {
                 Expanded(
                   child: TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: Text("Cancel", style: TextStyle(color: colorScheme.onSurface.withOpacity(0.5), fontWeight: FontWeight.w900)),
+                    child: Text("Cancel",
+                        style: TextStyle(
+                            color: colorScheme.onSurface.withOpacity(0.5),
+                            fontWeight: FontWeight.w900)),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -202,17 +270,28 @@ class BuildResolvedList extends StatelessWidget {
                       color: const Color(0xFF34D399),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: Colors.black, width: 3),
-                      boxShadow: const [BoxShadow(color: Colors.black, offset: Offset(3, 3))],
+                      boxShadow: const [
+                        BoxShadow(color: Colors.black, offset: Offset(3, 3))
+                      ],
                     ),
                     child: ElevatedButton(
                       onPressed: () {
-                        RepositoryProvider.of<FirebaseFirestoreRepo>(context).recordPayment(
-                          roomDocID: roomID, payerUID: fromUid, recipientUID: toUid, amount: amount,
+                        RepositoryProvider.of<FirebaseFirestoreRepo>(context)
+                            .recordPayment(
+                          roomDocID: roomID,
+                          payerUID: fromUid,
+                          recipientUID: toUid,
+                          amount: amount,
                         );
                         Navigator.pop(context);
                       },
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.transparent, shadowColor: Colors.transparent),
-                      child: const Text("Yes, Settle", style: TextStyle(color: Colors.black, fontWeight: FontWeight.w900)),
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent),
+                      child: const Text("Yes, Settle",
+                          style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w900)),
                     ),
                   ),
                 ),
@@ -235,7 +314,8 @@ class BuildResolvedList extends StatelessWidget {
         backgroundColor: color,
         child: Text(
           name.isNotEmpty ? name[0].toUpperCase() : "?",
-          style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w900, fontSize: 16),
+          style: const TextStyle(
+              color: Colors.black, fontWeight: FontWeight.w900, fontSize: 16),
         ),
       ),
     );

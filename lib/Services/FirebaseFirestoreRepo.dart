@@ -242,10 +242,11 @@ class FirebaseFirestoreRepo {
       if (splitDetails != null) newBill["splitDetails"] = splitDetails;
 
       bills.add(newBill);
-      
+
       // Recalculate total spent from all active non-settlement bills
-      num total = bills.where((b) => (b["active"] ?? true) && !(b["isSettlement"] ?? false))
-                       .fold(0, (sum, b) => sum + (b["amount"] ?? 0));
+      num total = bills
+          .where((b) => (b["active"] ?? true) && !(b["isSettlement"] ?? false))
+          .fold(0, (sum, b) => sum + (b["amount"] ?? 0));
 
       // Auto-compute live settlements
       SplitService splitService = SplitService(bills: bills, users: users);
@@ -296,21 +297,29 @@ class FirebaseFirestoreRepo {
       // Logging logic
       String userName = await preferenceService.getAvatarName();
       List<String> changes = [];
-      if (oldAmount != amount) changes.add("amount to ₹$amount (was ₹$oldAmount)");
-      if (oldDesc != desc) changes.add("description to '$desc' (was '$oldDesc')");
-      
+      if (oldAmount != amount)
+        changes.add("amount to ₹$amount (was ₹$oldAmount)");
+      if (oldDesc != desc)
+        changes.add("description to '$desc' (was '$oldDesc')");
+
       // Detailed participant change check
       if (splitAmong != null) {
         Map userMap = roomData["userMap"] ?? {};
-        List added = splitAmong.where((u) => !oldSplitAmong.contains(u)).toList();
-        List removed = oldSplitAmong.where((u) => !splitAmong.contains(u)).toList();
+        List added =
+            splitAmong.where((u) => !oldSplitAmong.contains(u)).toList();
+        List removed =
+            oldSplitAmong.where((u) => !splitAmong.contains(u)).toList();
 
         if (added.isNotEmpty) {
-          List addedNames = added.map((u) => (userMap[u] ?? "Unknown").toString().split(' ')[0]).toList();
+          List addedNames = added
+              .map((u) => (userMap[u] ?? "Unknown").toString().split(' ')[0])
+              .toList();
           changes.add("added ${addedNames.join(", ")}");
         }
         if (removed.isNotEmpty) {
-          List removedNames = removed.map((u) => (userMap[u] ?? "Unknown").toString().split(' ')[0]).toList();
+          List removedNames = removed
+              .map((u) => (userMap[u] ?? "Unknown").toString().split(' ')[0])
+              .toList();
           changes.add("removed ${removedNames.join(", ")}");
         }
       }
@@ -324,8 +333,9 @@ class FirebaseFirestoreRepo {
       }
 
       // Recalculate total spent from all active non-settlement bills
-      num total = bills.where((b) => (b["active"] ?? true) && !(b["isSettlement"] ?? false))
-                       .fold(0, (sum, b) => sum + (b["amount"] ?? 0));
+      num total = bills
+          .where((b) => (b["active"] ?? true) && !(b["isSettlement"] ?? false))
+          .fold(0, (sum, b) => sum + (b["amount"] ?? 0));
 
       // Auto-compute live settlements
       SplitService splitService = SplitService(bills: bills, users: users);
@@ -357,7 +367,7 @@ class FirebaseFirestoreRepo {
       num deleteAmount = bills[index]["amount"];
       String deleteDesc = bills[index]["desc"] ?? "Expense";
       bills.removeAt(index);
-      
+
       String userName = await preferenceService.getAvatarName();
       List logs = roomData["logs"] ?? [];
       logs.add({
@@ -366,11 +376,13 @@ class FirebaseFirestoreRepo {
       });
 
       // Recalculate total spent from all active non-settlement bills
-      num total = bills.where((b) => (b["active"] ?? true) && !(b["isSettlement"] ?? false))
-                       .fold(0, (sum, b) => sum + (b["amount"] ?? 0));
+      num total = bills
+          .where((b) => (b["active"] ?? true) && !(b["isSettlement"] ?? false))
+          .fold(0, (sum, b) => sum + (b["amount"] ?? 0));
 
       // Auto-compute live settlements after deletion
-      SplitService splitService = SplitService(bills: bills, users: roomData["users"]);
+      SplitService splitService =
+          SplitService(bills: bills, users: roomData["users"]);
       List<List<dynamic>> liveSettlementsList =
           splitService.calculateLiveSettlements();
 

@@ -64,9 +64,8 @@ class RoomDetailScreen extends StatelessWidget {
           child: const Center(
             child: Text(
               "Room code copied!",
-              style: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold),
+              style:
+                  TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
             ),
           ),
         ),
@@ -227,8 +226,7 @@ class RoomDetailScreen extends StatelessWidget {
                             child: Text(
                               item["msg"],
                               style: TextStyle(
-                                color: colorScheme.onSurface
-                                    .withOpacity(0.5),
+                                color: colorScheme.onSurface.withOpacity(0.5),
                                 fontSize: 13,
                                 fontWeight: FontWeight.w800,
                                 fontStyle: FontStyle.italic,
@@ -240,8 +238,7 @@ class RoomDetailScreen extends StatelessWidget {
                             timeformatter
                                 .format((item["time"] as Timestamp).toDate()),
                             style: TextStyle(
-                              color: colorScheme.onSurface
-                                  .withOpacity(0.3),
+                              color: colorScheme.onSurface.withOpacity(0.3),
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
                             ),
