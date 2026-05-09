@@ -1,52 +1,69 @@
-import 'package:blobs/blobs.dart';
 import 'package:flutter/material.dart';
+import 'package:just_split/utils/Cooloors.dart';
 
-List<Widget> designs = [
-  Positioned(
-    bottom: -80.0,
-    left: -80.0,
-    child: Blob.random(
-      size: 200,
-      styles: BlobStyles(
-        color: const Color(0xff87B28A),
-        fillType: BlobFillType.fill,
-        strokeWidth: 3,
-      ),
-    ),
-  ),
+// Lightweight decorative elements that replace expensive Blob rendering
+final List<Widget> designs = [
   Positioned(
     bottom: -60.0,
     left: -60.0,
-    child: Blob.random(
-      size: 200,
-      styles: BlobStyles(
-        color: const Color(0xff87B28A),
-        fillType: BlobFillType.stroke,
-        strokeWidth: 3,
+    child: Container(
+      width: 160,
+      height: 160,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          colors: [
+            Cooloors.success.withOpacity(0.4),
+            Cooloors.success.withOpacity(0.0),
+          ],
+        ),
       ),
     ),
   ),
   Positioned(
-    top: -80.0,
-    right: -80.0,
-    child: Blob.random(
-      size: 200,
-      styles: BlobStyles(
-        color: const Color(0xff86778E),
-        fillType: BlobFillType.fill,
-        strokeWidth: 3,
+    bottom: -40.0,
+    left: -40.0,
+    child: Container(
+      width: 140,
+      height: 140,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: Cooloors.success.withOpacity(0.25),
+          width: 2,
+        ),
       ),
     ),
   ),
   Positioned(
     top: -60.0,
     right: -60.0,
-    child: Blob.random(
-      size: 200,
-      styles: BlobStyles(
-        color: const Color(0xff86778E),
-        fillType: BlobFillType.stroke,
-        strokeWidth: 3,
+    child: Container(
+      width: 160,
+      height: 160,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          colors: [
+            Cooloors.primary.withOpacity(0.4),
+            Cooloors.primary.withOpacity(0.0),
+          ],
+        ),
+      ),
+    ),
+  ),
+  Positioned(
+    top: -40.0,
+    right: -40.0,
+    child: Container(
+      width: 140,
+      height: 140,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: Cooloors.primary.withOpacity(0.25),
+          width: 2,
+        ),
       ),
     ),
   ),

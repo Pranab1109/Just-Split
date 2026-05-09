@@ -4,7 +4,7 @@ import 'package:just_split/utils/Avatars.dart';
 import 'package:just_split/utils/TextStyler.dart';
 
 class BuildUserList extends StatefulWidget {
-  const BuildUserList({Key? key, required this.roomID}) : super(key: key);
+  const BuildUserList({super.key, required this.roomID});
   final String roomID;
   @override
   State<BuildUserList> createState() => _BuildUserListState();

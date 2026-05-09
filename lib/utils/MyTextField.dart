@@ -12,40 +12,37 @@ class MyTextField extends StatelessWidget {
   final GlobalKey<FormState> formkey;
   @override
   const MyTextField(
-      {Key? key,
+      {super.key,
       required this.inputController,
       required this.hintText,
       required this.formkey,
       this.isEmail = false,
       this.isName = false,
-      this.isPassword = false})
-      : super(key: key);
+      this.isPassword = false});
 
   @override
   Widget build(BuildContext context) {
-    const primaryColor = Colors.white;
-    const accentColor = Colors.black38;
+    final colorScheme = Theme.of(context).colorScheme;
     const errorColor = Color(0xffEF4444);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          height: 70,
+          height: 75,
           child: BlocBuilder<AvatarBloc, AvatarState>(
             builder: (context, state) {
               return TextFormField(
                 obscureText: isPassword,
                 controller: inputController,
                 onChanged: (value) {
-                  //Do something
                   if (isName) {
                     BlocProvider.of<AvatarBloc>(context).add(
                         AvatarNameChangeRequest(name: inputController.text));
                   }
                 },
-                keyboardType: TextInputType.emailAddress,
-                style: const TextStyle(fontSize: 14, color: Colors.white),
+                keyboardType: isEmail ? TextInputType.emailAddress : TextInputType.text,
+                style: TextStyle(fontSize: 15, color: colorScheme.onSurface, fontWeight: FontWeight.bold),
                 autovalidateMode: AutovalidateMode.onUserInteraction,
                 validator: (value) {
                   if (isEmail) {
@@ -54,40 +51,38 @@ class MyTextField extends StatelessWidget {
                         : null;
                   } else if (isPassword) {
                     return value != null && value.length < 6
-                        ? "Enter min. 6 characters"
+                        ? "Min. 6 chars"
                         : null;
                   } else if (isName) {
                     return value != null && value.length < 3
-                        ? "Enter min. 3 characters"
+                        ? "Min. 3 chars"
                         : null;
                   }
                   return null;
                 },
                 decoration: InputDecoration(
                   label: Text(hintText),
-                  labelStyle: const TextStyle(color: primaryColor),
-                  // prefixIcon: Icon(Icons.email),
+                  labelStyle: TextStyle(color: colorScheme.onSurface.withOpacity(0.6), fontWeight: FontWeight.bold),
                   filled: true,
-                  fillColor: accentColor,
+                  fillColor: colorScheme.surface,
                   hintText: hintText,
-                  hintStyle: TextStyle(color: Colors.grey.withOpacity(.75)),
-                  contentPadding: const EdgeInsets.symmetric(
-                      vertical: 0.0, horizontal: 20.0),
-                  border: const OutlineInputBorder(
-                    borderSide: BorderSide(color: primaryColor, width: 1.0),
-                    borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                  hintStyle: TextStyle(color: colorScheme.onSurface.withOpacity(0.3)),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+                  border: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.black, width: 2.5),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  focusedBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(color: primaryColor, width: 1.0),
-                    borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: colorScheme.primary, width: 3.5),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  errorBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(color: errorColor, width: 1.0),
-                    borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                  errorBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: errorColor, width: 2.5),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  enabledBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(color: primaryColor, width: 1.0),
-                    borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: const BorderSide(color: Colors.black, width: 2.5),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
               );

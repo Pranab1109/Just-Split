@@ -4,466 +4,450 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:just_split/Services/AuthRepo.dart';
-import 'package:just_split/Services/AvatarRepo.dart';
 import 'package:just_split/Services/FirebaseFirestoreRepo.dart';
 import 'package:just_split/Services/SplitService.dart';
 import 'package:just_split/utils/BuildResolvedBills.dart';
 import 'package:just_split/utils/Cooloors.dart';
 import 'package:just_split/utils/RoomCardWidget.dart';
+import 'package:just_split/utils/StackedCardTabs.dart';
+import 'package:just_split/utils/AddBillBottomSheet.dart';
+import 'package:just_split/utils/CategoryPredictor.dart';
 import 'package:just_split/utils/buildUserListRoomPage.dart';
-import 'package:intl/intl.dart';
 import 'package:just_split/utils/onDeleteWillPop.dart';
-import 'dart:math';
-import '../utils/MyTextFieldTwo.dart';
+import 'package:intl/intl.dart';
 
 class RoomDetailScreen extends StatelessWidget {
   final String roomID;
   final String roomName;
   final String roomCode;
+
   RoomDetailScreen({
     Key? key,
     required this.roomID,
     required this.roomName,
     required this.roomCode,
   }) : super(key: key);
+
   final Cooloors cooloors = Cooloors();
-
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController amountEditingController = TextEditingController();
-  final TextEditingController descEditingController = TextEditingController();
   final ScrollController _controller = ScrollController();
-  void _scrollDown() {
-    if (firstTime) {
-      _controller.jumpTo(_controller.position.maxScrollExtent);
-      firstTime = false;
-      return;
-    }
-    _controller.animateTo(
-      _controller.position.maxScrollExtent,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeIn,
-    );
-  }
-
-  void copyText(context) {
-    Clipboard.setData(ClipboardData(text: roomCode.toString()))
-        .then((_) => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-              content: Text("Room Code Copied"),
-              behavior: SnackBarBehavior.floating,
-              duration: Duration(milliseconds: 700),
-            )));
-  }
-
   final user = AuthRepository().getUser();
-
-  void addBill(context, name) async {
-    if (_formKey.currentState!.validate()) {
-      RepositoryProvider.of<FirebaseFirestoreRepo>(context).addBill(
-        amount: num.parse(
-            num.parse(amountEditingController.text).toStringAsFixed(2)),
-        desc: descEditingController.text,
-        roomDocID: roomID,
-      );
-      descEditingController.text = "";
-      amountEditingController.text = "";
-      Navigator.pop(context);
-      firstTime = true;
-      _scrollDown();
-    }
-  }
-
-  void deleteBill(context, index) async {
-    RepositoryProvider.of<FirebaseFirestoreRepo>(context)
-        .deleteBill(index, roomID);
-  }
-
   final FirebaseFirestoreRepo firebaseFirestoreRepo = FirebaseFirestoreRepo();
   final DateFormat formatter = DateFormat('dd MMM yy');
   final DateFormat timeformatter = DateFormat('jm');
-  bool firstTime = true;
-  Map userMap = {};
+
+  void _scrollToLatest() {
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (_controller.hasClients) {
+        _controller.animateTo(
+          0.0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
+  void copyText(context) {
+    Clipboard.setData(ClipboardData(text: roomCode));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        dismissDirection: DismissDirection.down,
+        padding: const EdgeInsets.all(0),
+        content: Container(
+          height: 50,
+          width: MediaQuery.of(context).size.width * 0.85,
+          decoration: BoxDecoration(
+            color: const Color(0xFF34D399),
+            border: Border.all(color: Colors.black, width: 3),
+            boxShadow: Cooloors.neoShadow,
+          ),
+          child: const Center(
+            child: Text(
+              "Room code copied!",
+              style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold),
+            ),
+          ),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final uid = user?.uid;
     Stream documentStream = firebaseFirestoreRepo.rooms.doc(roomID).snapshots();
     final size = MediaQuery.of(context).size;
-    return Scaffold(
-      body: SafeArea(
-        child: StreamBuilder<dynamic>(
-            stream: documentStream,
-            builder: (context, snapshot) {
-              var data = snapshot.data;
-              if (data == null) {
-                return const Center(child: CircularProgressIndicator());
-              } else {
-                if (firstTime ||
-                    _controller.position.maxScrollExtent ==
-                        _controller.offset) {
-                  SchedulerBinding.instance.addPostFrameCallback((_) {
-                    _scrollDown();
-                  });
-                }
-                return Column(
-                  children: [
-                    roomCardWidget(size, context, data["totalSpent"].toString(),
-                        roomCode, roomName, copyText),
-                    Expanded(
-                      child: ListView.builder(
-                          controller: _controller,
-                          itemCount: data["bills"].length,
-                          physics: const BouncingScrollPhysics(),
-                          itemBuilder: (context, index) {
-                            var item = data["bills"][index];
-                            userMap[item["uid"]] = item["userName"];
-                            Widget separator = index == 0
-                                ? Text(
-                                    formatter.format((data["bills"][index]
-                                            ['time'] as Timestamp)
-                                        .toDate()),
-                                    style: TextStyle(
-                                        color: cooloors.darkSubTextColor),
-                                  )
-                                : const SizedBox();
-                            if (index != 0 &&
-                                formatter.format((data["bills"][index]['time']
-                                            as Timestamp)
-                                        .toDate()) !=
-                                    formatter.format((data["bills"][index - 1]
-                                            ['time'] as Timestamp)
-                                        .toDate())) {
-                              separator = Text(
-                                formatter.format(
-                                    (data["bills"][index]['time'] as Timestamp)
-                                        .toDate()),
-                                style:
-                                    TextStyle(color: cooloors.darkSubTextColor),
-                              );
-                            }
-                            return Column(
-                              children: [
-                                separator,
-                                Align(
-                                  alignment: item["uid"] == uid
-                                      ? Alignment.bottomRight
-                                      : Alignment.bottomLeft,
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: InkWell(
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(5.0)),
-                                      enableFeedback: true,
-                                      splashColor: Colors.white,
-                                      highlightColor: Colors.white,
-                                      onLongPress: () async {
-                                        if (item["uid"] == uid &&
-                                            item["active"] == true) {
-                                          var delete =
-                                              await onDeleteBillPop(context);
-                                          if (delete) {
-                                            deleteBill(context, index);
-                                          }
-                                        }
-                                      },
-                                      child: Stack(
-                                        alignment: Alignment.topRight,
-                                        children: [
-                                          Container(
-                                            constraints: BoxConstraints(
-                                                minWidth: size.width * 0.35,
-                                                maxWidth: size.width * 0.6),
-                                            padding: const EdgeInsets.all(5.0),
-                                            // width: size.width * 0.35,
-                                            decoration: BoxDecoration(
-                                              color: cooloors.darkTileColor
-                                                  .withOpacity(0.99),
-                                              borderRadius:
-                                                  const BorderRadius.all(
-                                                Radius.circular(5.0),
-                                              ),
-                                            ),
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  item["userName"].toString(),
-                                                  style: TextStyle(
-                                                      color: cooloors
-                                                          .lightTileColor,
-                                                      fontSize: 12),
-                                                ),
-                                                Text(
-                                                  "₹ ${item["amount"].toString()}",
-                                                  style: TextStyle(
-                                                      color: cooloors
-                                                          .darkTextColor,
-                                                      fontSize: 36,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                ),
-                                                Text(
-                                                  item["desc"].toString(),
-                                                  style: TextStyle(
-                                                    color: cooloors
-                                                        .darkSubTextColor,
-                                                  ),
-                                                ),
-                                                Container(
-                                                  alignment:
-                                                      Alignment.centerRight,
-                                                  width: max(
-                                                      min(
-                                                          item["desc"].length *
-                                                              12.0,
-                                                          size.width * 0.7),
-                                                      size.width * 0.35),
-                                                  child: Text(
-                                                    timeformatter
-                                                        .format((item['time']
-                                                                as Timestamp)
-                                                            .toDate())
-                                                        .toString(),
-                                                    style: TextStyle(
-                                                      color: cooloors
-                                                          .darkSubTextColor,
-                                                      fontSize: 12,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          !item["active"]
-                                              ? ClipRRect(
-                                                  borderRadius:
-                                                      const BorderRadius.all(
-                                                          Radius.circular(5.0)),
-                                                  child: Container(
-                                                    width: 40,
-                                                    height: 40,
-                                                    color: Colors.black
-                                                        .withOpacity(0.8),
-                                                    child: const Icon(
-                                                      Icons.check,
-                                                      color: Color(0xff87B28A),
-                                                      size: 26.0,
-                                                    ),
-                                                  ),
-                                                )
-                                              : const SizedBox(),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            );
-                          }),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  showModalBottomSheet(
-                                      isScrollControlled: true,
-                                      // expand: true,
-                                      backgroundColor:
-                                          cooloors.darkBackgroundColor,
-                                      shape: const RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.vertical(
-                                              top: Radius.circular(25.0))),
-                                      context: (context),
-                                      builder: (context) => Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Container(
-                                                decoration: const BoxDecoration(
-                                                    // color: Color.fromARGB(255, 24, 24, 24),
-                                                    borderRadius:
-                                                        BorderRadius.only(
-                                                  topLeft: Radius.circular(5.0),
-                                                  topRight:
-                                                      Radius.circular(5.0),
-                                                )),
-                                                child: Column(
-                                                  children: [
-                                                    Form(
-                                                      key: _formKey,
-                                                      child: Column(
-                                                        mainAxisSize:
-                                                            MainAxisSize.min,
-                                                        children: [
-                                                          Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                        .only(
-                                                                    top: 20.0),
-                                                            child: Text(
-                                                              "Add Bill",
-                                                              style: TextStyle(
-                                                                  // color: Colors.white,
-                                                                  color: cooloors
-                                                                      .darkTextColor,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold),
-                                                            ),
-                                                          ),
-                                                          Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                        .only(
-                                                                    top: 12.0,
-                                                                    left: 8.0,
-                                                                    right: 8.0),
-                                                            child:
-                                                                MyTextFieldTwo(
-                                                              isNum: true,
-                                                              hintText:
-                                                                  "Amount",
-                                                              inputController:
-                                                                  amountEditingController,
-                                                              errorText: "",
-                                                            ),
-                                                          ),
-                                                          const SizedBox(
-                                                            height: 16,
-                                                          ),
-                                                          Padding(
-                                                            padding:
-                                                                const EdgeInsets
-                                                                        .only(
-                                                                    left: 8.0,
-                                                                    right: 8.0),
-                                                            child:
-                                                                MyTextFieldTwo(
-                                                              hintText:
-                                                                  "Description",
-                                                              inputController:
-                                                                  descEditingController,
-                                                              errorText:
-                                                                  "Enter description.",
-                                                            ),
-                                                          ),
-                                                          Padding(
-                                                            padding:
-                                                                EdgeInsets.only(
-                                                              bottom: MediaQuery
-                                                                      .of(context)
-                                                                  .viewInsets
-                                                                  .bottom,
-                                                              left: 8.0,
-                                                              right: 8.0,
-                                                            ),
-                                                            child:
-                                                                ElevatedButton(
-                                                                    onPressed:
-                                                                        () async {
-                                                                      addBill(
-                                                                          context,
-                                                                          context
-                                                                              .read<AvatarRepo>()
-                                                                              .userName);
-                                                                    },
-                                                                    child:
-                                                                        SizedBox(
-                                                                      height:
-                                                                          50.0,
-                                                                      width: MediaQuery.of(context)
-                                                                              .size
-                                                                              .width *
-                                                                          0.9,
-                                                                      child:
-                                                                          const Center(
-                                                                        child:
-                                                                            Text(
-                                                                          "Send",
-                                                                          style: TextStyle(
-                                                                              // color: Colors.black,
-                                                                              fontWeight: FontWeight.bold,
-                                                                              fontSize: 18.0),
-                                                                        ),
-                                                                      ),
-                                                                    )),
-                                                          ),
-                                                          const SizedBox(
-                                                            height: 10.0,
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              )
-                                            ],
-                                          ));
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  // width: MediaQuery.of(context).size.width * 0.87,
-                                  height: 50,
-                                  child: const Center(
-                                      child: Text(
-                                    "Add Bill",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18.0),
-                                  )),
-                                ),
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        body: SafeArea(
+          child: Column(
+            children: [
+              // Header with Stacked Cards
+              Padding(
+                padding: const EdgeInsets.only(top: 16.0),
+                child: StackedCardTabs(
+                  expensesCard: StreamBuilder<dynamic>(
+                    stream: documentStream,
+                    builder: (context, snapshot) {
+                      return _buildCard(context, snapshot, uid, size,
+                          isBalances: false);
+                    },
+                  ),
+                  balancesCard: StreamBuilder<dynamic>(
+                    stream: documentStream,
+                    builder: (context, snapshot) {
+                      return _buildCard(context, snapshot, uid, size,
+                          isBalances: true);
+                    },
+                  ),
+                ),
+              ),
+
+              // Content Area: List switches based on Tab
+              Expanded(
+                child: StreamBuilder<dynamic>(
+                  stream: documentStream,
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    var data = snapshot.data;
+                    if (!data.exists) {
+                      return const Center(child: Text("Room not found"));
+                    }
+
+                    Map<String, dynamic> docData =
+                        data.data() as Map<String, dynamic>;
+                    final List bills =
+                        List.from(docData["bills"] ?? []).reversed.toList();
+
+                    return AnimatedBuilder(
+                      animation: DefaultTabController.of(context).animation!,
+                      builder: (context, child) {
+                        int tabIndex = DefaultTabController.of(context).index;
+
+                        return IndexedStack(
+                          index: tabIndex,
+                          children: [
+                            // Tab 0: Expenses List
+                            _buildExpensesList(
+                                context, bills, uid, colorScheme, docData),
+
+                            // Tab 1: Balances/Settlements List
+                            Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: BuildResolvedList(
+                                roomID: roomID,
+                                uid: uid,
                               ),
                             ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: ElevatedButton(
-                                onPressed: () {
-                                  SplitService splitService = SplitService(
-                                      bills: data["bills"],
-                                      users: data["users"]);
-                                  splitService.split(roomID, context);
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  height: 50,
-                                  width: 50,
-                                  child: const Icon(
-                                      Icons.check_circle_outline_rounded),
-                                )),
-                          )
-                        ],
-                      ),
-                    ),
-                  ],
-                );
-              }
-            }),
-      ),
-      drawer: Drawer(
-        backgroundColor: cooloors.darkAppBarColor,
-        child: SizedBox(
-          height: 200,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Expanded(
-                  child: BuildUserList(
-                roomID: roomID,
-              )),
-              Expanded(
-                  child: BuildResolvedList(
-                roomID: roomID,
-                uid: uid,
-              ))
+                          ],
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+
+              // Bottom Actions
+              _buildBottomActions(context, documentStream, colorScheme),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildExpensesList(BuildContext context, List bills, String? uid,
+      ColorScheme colorScheme, Map docData) {
+    // Merge bills and logs
+    List logs = docData["logs"] ?? [];
+    List combined = [...bills, ...logs];
+    // Sort descending by time
+    combined.sort((a, b) {
+      Timestamp tA = a["time"];
+      Timestamp tB = b["time"];
+      return tB.compareTo(tA);
+    });
+
+    return Column(
+      children: [
+        Expanded(
+          child: ListView.builder(
+            controller: _controller,
+            itemCount: combined.length,
+            padding: const EdgeInsets.only(top: 8, bottom: 20),
+            physics: const BouncingScrollPhysics(),
+            itemBuilder: (context, index) {
+              var item = combined[index];
+              bool isLog = item.containsKey("msg");
+
+              bool isFirstInDay = index == 0 ||
+                  formatter.format((item['time'] as Timestamp).toDate()) !=
+                      formatter.format(
+                          (combined[index - 1]['time'] as Timestamp).toDate());
+
+              return Column(
+                children: [
+                  if (isFirstInDay)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 20.0, bottom: 12.0),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 4),
+                        decoration: BoxDecoration(
+                            color: Colors.black,
+                            borderRadius: BorderRadius.circular(8)),
+                        child: Text(
+                          formatter
+                              .format((item['time'] as Timestamp).toDate()),
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w900),
+                        ),
+                      ),
+                    ),
+                  if (isLog)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24.0, vertical: 8.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              item["msg"],
+                              style: TextStyle(
+                                color: colorScheme.onSurface
+                                    .withOpacity(0.5),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w800,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            timeformatter
+                                .format((item["time"] as Timestamp).toDate()),
+                            style: TextStyle(
+                              color: colorScheme.onSurface
+                                  .withOpacity(0.3),
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0, vertical: 6.0),
+                      child: InkWell(
+                        onTap: () {
+                          showModalBottomSheet(
+                            isScrollControlled: true,
+                            backgroundColor: Colors.transparent,
+                            context: context,
+                            builder: (context) => AddBillBottomSheet(
+                              roomID: roomID,
+                              usersList: docData["users"],
+                              userMap: docData["userMap"],
+                              initialBill: Map<String, dynamic>.from(item),
+                              editIndex:
+                                  (docData["bills"] as List).indexOf(item),
+                              onBillAdded: () {},
+                            ),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: colorScheme.surface,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.black, width: 2.5),
+                            boxShadow: const [
+                              BoxShadow(
+                                  color: Colors.black, offset: Offset(3, 3))
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                height: 40,
+                                width: 40,
+                                decoration: BoxDecoration(
+                                  color: (item["isSettlement"] ?? false)
+                                      ? const Color(0xFF34D399)
+                                      : CategoryPredictor.getColor(
+                                          CategoryPredictor.predict(
+                                              item["desc"] ?? "")),
+                                  shape: BoxShape.circle,
+                                  border:
+                                      Border.all(color: Colors.black, width: 2),
+                                ),
+                                child: Icon(
+                                  (item["isSettlement"] ?? false)
+                                      ? Icons.handshake_rounded
+                                      : CategoryPredictor.getIcon(
+                                          CategoryPredictor.predict(
+                                              item["desc"] ?? "")),
+                                  size: 20,
+                                  color: Colors.black,
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item["desc"] == null ||
+                                              item["desc"].toString().isEmpty
+                                          ? "Expense"
+                                          : item["desc"].toString(),
+                                      style: const TextStyle(
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: 16),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    Text(item["userName"] ?? "Unknown",
+                                        style: const TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                "₹${num.parse(item["amount"].toString()).toStringAsFixed(2)}",
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w900, fontSize: 16),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBottomActions(
+      BuildContext context, Stream documentStream, ColorScheme colorScheme) {
+    return StreamBuilder<dynamic>(
+      stream: documentStream,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return const SizedBox();
+        var data = snapshot.data;
+        if (!data.exists) return const SizedBox();
+        Map<String, dynamic> docData = data.data() as Map<String, dynamic>;
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+          child: Container(
+            height: 60,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: colorScheme.primary,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.black, width: 3),
+              boxShadow: const [
+                BoxShadow(color: Colors.black, offset: Offset(4, 4))
+              ],
+            ),
+            child: ElevatedButton(
+              onPressed: () {
+                showModalBottomSheet(
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  context: context,
+                  builder: (context) => AddBillBottomSheet(
+                    roomID: roomID,
+                    usersList: docData["users"],
+                    userMap: docData["userMap"],
+                    onBillAdded: () => _scrollToLatest(),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent),
+              child: const Text("Add Bill",
+                  style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 20)),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCard(
+      BuildContext context, AsyncSnapshot snapshot, String? uid, Size size,
+      {required bool isBalances}) {
+    if (!snapshot.hasData) return const SizedBox();
+    var data = snapshot.data;
+    if (!data.exists) return const SizedBox();
+
+    Map<String, dynamic> docData = data.data() as Map<String, dynamic>;
+    num youPaid = 0;
+    num yourBalance = 0;
+    String totalSpent = docData["totalSpent"].toString();
+    List usersList = docData["users"] ?? [];
+    Map userMap = docData["userMap"] ?? {};
+
+    for (var item in docData["bills"] ?? []) {
+      if (item["uid"] == uid && item["active"] == true) {
+        youPaid += item["amount"];
+      }
+    }
+
+    if (docData.containsKey("liveSettlements") &&
+        docData["liveSettlements"] != null) {
+      Map settlements = docData["liveSettlements"];
+      settlements.forEach((key, value) {
+        List<String> parts = key.toString().split(':');
+        if (parts.length == 2) {
+          if (parts[1] == uid)
+            yourBalance += value;
+          else if (parts[0] == uid) yourBalance -= value;
+        }
+      });
+    }
+
+    return roomCardWidget(
+      size,
+      context,
+      totalSpent.toString(),
+      roomCode,
+      roomName,
+      roomID,
+      copyText,
+      youPaid: youPaid,
+      yourBalance: yourBalance,
+      usersList: usersList,
+      userMap: userMap,
+      leftTab: isBalances ? null : "Expenses",
+      rightTab: isBalances ? "Balances" : null,
+      useHero: !isBalances,
     );
   }
 }

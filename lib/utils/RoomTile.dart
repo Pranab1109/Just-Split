@@ -5,59 +5,77 @@ import 'package:intl/intl.dart';
 
 Widget roomTile(BuildContext context, Map<String, dynamic> data,
     DocumentSnapshot<Object?> document, Function deleteRoom) {
-  Cooloors cooloors = Cooloors();
+  final colorScheme = Theme.of(context).colorScheme;
   final DateFormat formatter = DateFormat('dd MMM yy');
+  
   return Container(
-    height: 80.0,
-    width: MediaQuery.of(context).size.width * 0.8,
+    margin: const EdgeInsets.only(bottom: 8),
+    padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
-      color: cooloors.darkTileColor,
-      borderRadius: const BorderRadius.all(
-        Radius.circular(5.0),
-      ),
+      color: colorScheme.surface,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: Colors.black, width: 3),
+      boxShadow: Cooloors.neoShadow,
     ),
     child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                data["roomName"],
-                overflow: TextOverflow.fade,
-                style: TextStyle(
-                    fontSize: 18.0,
-                    fontWeight: FontWeight.bold,
-                    color: cooloors.darkTextColor),
-              ),
+        Hero(
+          tag: 'room_icon_${data["roomUID"]}',
+          child: Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: colorScheme.primary.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.black, width: 2),
             ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                formatter.format((data['time'] as Timestamp).toDate()),
-                style: TextStyle(
-                    fontSize: 14.0,
-                    fontWeight: FontWeight.w300,
-                    color: cooloors.darkTextColor),
+            child: Icon(Icons.meeting_room_rounded, color: colorScheme.primary),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Hero(
+                tag: 'room_name_${data["roomUID"]}',
+                child: Material(
+                  color: Colors.transparent,
+                  child: Text(
+                    data["roomName"],
+                    style: TextStyle(
+                      fontSize: 18.0,
+                      fontWeight: FontWeight.w900,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ],
+              const SizedBox(height: 4),
+              Text(
+                "Active ${formatter.format((data['time'] as Timestamp).toDate())}",
+                style: TextStyle(
+                  fontSize: 14.0,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onSurface.withOpacity(0.6),
+                ),
+              ),
+            ],
+          ),
         ),
         IconButton(
-            onPressed: () {
-              var roomUID = data["roomUID"];
-              var roomID = data["roomID"];
-              print(roomID);
-              var userRoomID = document.id;
-              deleteRoom(context, roomUID, userRoomID, roomID);
-            },
-            icon: Icon(
-              Icons.delete_outline_rounded,
-              color: cooloors.darkTextColor,
-            ))
+          onPressed: () {
+            var roomUID = data["roomUID"];
+            var roomID = data["roomID"];
+            var userRoomID = document.id;
+            deleteRoom(context, roomUID, userRoomID, roomID);
+          },
+          icon: Icon(
+            Icons.delete_rounded,
+            color: colorScheme.error,
+            size: 24,
+          ),
+        )
       ],
     ),
   );

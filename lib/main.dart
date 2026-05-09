@@ -1,5 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:just_split/firebase_options.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:just_split/Services/AuthRepo.dart';
@@ -9,41 +12,43 @@ import 'package:just_split/Services/PreferenceService.dart';
 import 'package:just_split/bloc/Avatar/avatarbloc_bloc.dart';
 import 'package:just_split/screens/LandingPage.dart';
 import 'package:just_split/screens/LoginPage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:just_split/utils/Cooloors.dart';
+import 'firebase_options.dart';
 
 import 'bloc/auth/auth_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  if (!kIsWeb) {
+    await GoogleSignIn.instance.initialize();
+  }
+
+  // Lock to portrait mode for consistent UI
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+  ]);
+
+  // Set system UI overlay style for immersive dark theme
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.light,
+    systemNavigationBarColor: Cooloors.background,
+    systemNavigationBarIconBrightness: Brightness.light,
+  ));
+
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
-    Cooloors cooloors = Cooloors();
-    var themeData = ThemeData(
-      textTheme: GoogleFonts.nunitoSansTextTheme(
-        Theme.of(context).textTheme,
-      ),
-      scaffoldBackgroundColor: cooloors.darkBackgroundColor,
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.all(cooloors.buttonColor),
-          foregroundColor: MaterialStateProperty.all(cooloors.lightTextColor),
-        ),
-      ),
-      appBarTheme: AppBarTheme(
-        backgroundColor: cooloors.darkBackgroundColor,
-        elevation: 0.0,
-      ),
-      colorScheme:
-          ColorScheme.fromSwatch().copyWith(secondary: cooloors.buttonColor),
-    );
     return MultiRepositoryProvider(
-      // create: (context) => AuthRepository(),
       providers: [
         RepositoryProvider<AuthRepository>(
             create: (context) => AuthRepository()),
@@ -66,21 +71,32 @@ class MyApp extends StatelessWidget {
             ),
           )
         ],
-        child: FutureBuilder(
-          initialData: false,
-          future: PreferenceService().getAuthStatus(),
-          builder: (context, snapshot) {
-            if (snapshot.hasData && snapshot.data == true) {
-              return MaterialApp(
-                theme: themeData,
-                home: LandingPage(
-                  user: context.read<AuthRepository>().getUser()!,
-                ),
-              );
-            }
-            return MaterialApp(
-              theme: themeData,
-              home: LoginPage(),
+        child: ValueListenableBuilder<ThemeMode>(
+          valueListenable: themeNotifier,
+          builder: (_, currentThemeMode, __) {
+            return FutureBuilder(
+              initialData: false,
+              future: PreferenceService().getAuthStatus(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData && snapshot.data == true) {
+                  return MaterialApp(
+                    debugShowCheckedModeBanner: false,
+                    theme: Cooloors.neoLightTheme,
+                    darkTheme: Cooloors.neoDarkTheme,
+                    themeMode: currentThemeMode,
+                    home: LandingPage(
+                      user: context.read<AuthRepository>().getUser()!,
+                    ),
+                  );
+                }
+                return MaterialApp(
+                  debugShowCheckedModeBanner: false,
+                  theme: Cooloors.neoLightTheme,
+                  darkTheme: Cooloors.neoDarkTheme,
+                  themeMode: currentThemeMode,
+                  home: LoginPage(),
+                );
+              },
             );
           },
         ),

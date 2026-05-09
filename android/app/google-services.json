@@ -2,7 +2,7 @@
   "project_info": {
     "project_number": "667371289794",
     "project_id": "just-split-62b39",
-    "storage_bucket": "just-split-62b39.appspot.com"
+    "storage_bucket": "just-split-62b39.firebasestorage.app"
   },
   "client": [
     {
@@ -22,11 +22,27 @@
           }
         },
         {
+          "client_id": "667371289794-jdgn2oi1novhi6cp0onihtn1bf9ee8lq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.just_split",
+            "certificate_hash": "9724c517031c8ef6f471b9fbb72159855b579a8d"
+          }
+        },
+        {
           "client_id": "667371289794-ooarv62kc1kirvjj51g9hktlf96gi71e.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.example.just_split",
             "certificate_hash": "ef37b14e3b569ae67ec5ba13c8a4a3c76e0ffbd8"
+          }
+        },
+        {
+          "client_id": "667371289794-r9dpk80d3os6705dbji3pvnimis400gj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.just_split",
+            "certificate_hash": "ecf5c20cb28d1b2b0f69d7086343a5bbb6721f99"
           }
         },
         {
